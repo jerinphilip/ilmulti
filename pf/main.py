@@ -1,7 +1,19 @@
-from pf.dataset import MonolingualDataset
+from pf.dataset import MonolingualDataset, ParallelDataset
+from pf.filters import PairDetect
+from tqdm import tqdm
+import sys
 
-path = '/scratch/jerin/f-iitb/train.en'
-save_path = '/scratch/jerin/f-iitb/'
-dataset = MonolingualDataset.build(path, save_path, 10000)
-for line in dataset:
-    print(line)
+prefix = sys.argv[1]
+exts = sys.argv[2], sys.argv[3]
+
+parallel = ParallelDataset(prefix, exts)
+
+f = PairDetect('en', 'de', 0.9)
+for i, (src, tgt) in enumerate(tqdm(parallel)):
+    pair = (src, tgt)
+    if not f(pair):
+        print(i, ">", src)
+        print(i, "<", tgt)
+
+
+
