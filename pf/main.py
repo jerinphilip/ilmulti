@@ -7,7 +7,6 @@ prefix = sys.argv[1]
 exts = sys.argv[2], sys.argv[3]
 
 parallel = ParallelDataset(prefix, exts)
-
 multi = MultilingualDataset([parallel])
 
 f = PairDetect('en', 'de', 0.9)

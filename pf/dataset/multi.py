@@ -48,8 +48,13 @@ class MultilingualDataset:
         lsrc, ltgt = self.current_langs()
         p1 = (inject(ltgt, src), tgt)
         p2 = (inject(lsrc, tgt), src)
+        p3 = (inject(lsrc, src), src)
+        p3 = (inject(ltgt, tgt), tgt)
+
         self.queue.append(p1)
         self.queue.append(p2)
+        self.queue.append(p3)
+        self.queue.append(p4)
 
 
     def current_langs(self):
