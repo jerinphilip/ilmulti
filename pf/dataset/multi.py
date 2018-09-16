@@ -17,7 +17,7 @@ class MultilingualDataset:
 
     def step(self):
         self.current = self.current + 1
-        if self.current > len(self.psets):
+        if self.current >= len(self.psets):
             raise StopIteration
         self.iter = iter(self.psets[self.current])
 
@@ -49,8 +49,7 @@ class MultilingualDataset:
         p1 = (inject(ltgt, src), tgt)
         p2 = (inject(lsrc, tgt), src)
         p3 = (inject(lsrc, src), src)
-        p3 = (inject(ltgt, tgt), tgt)
-
+        p4 = (inject(ltgt, tgt), tgt)
         self.queue.append(p1)
         self.queue.append(p2)
         self.queue.append(p3)
