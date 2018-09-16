@@ -37,30 +37,61 @@ class FairseqPrediction:
             "S": lambda value: self.source(value),
             "H": lambda value: self.hypothesis(value)
         }
-        delegator[key](value)
+        noop = lambda value: None
+        delegator.get(key, noop)(value)
 
 
 
 class FairseqOutput(ParallelDataset):
-    def __init__(self, path, src, tgt, max_length=7500000):
+    def __init__(self, path, src, tgt, 
+            max_count=7500000, 
+            min_length=6, max_length=30, 
+            plb=0.1, pub=0.4):
         self.path = path
         self.exts = (src, tgt)
+        self.max_count = max_count
+
+        self.min_length = min_length
         self.max_length = max_length
 
+        self.plb = 0.1
+        self.pub = 0.4
+
     def __iter__(self):
+        self.counter = 0
         self.fp = iter(open(self.path))
-        start = 7
-        for i in range(start):
-            _ = next(self.fp)
         return self
 
     def __next__(self):
-        order = ["S", "T", "H", "P"]
-        predn = FairseqPrediction()
-        for i, key in enumerate(order):
-            line = next(self.fp).strip()
-            predn.update(key, line)
-        return predn
+        return self._next()
+    
+
+    def _next(self):
+        if self.counter > self.max_count:
+            raise StopIteration
+        order = ["S", "H"]
+        predn = None
+        while not self.check(predn):
+            predn = FairseqPrediction()
+            for i, key in enumerate(order):
+                line = next(self.fp).strip()
+                predn.update(key, line)
+
+        self.counter = self.counter + 1
+        return (predn.src, predn.tgt)
+
+    def check(self, predn):
+        if predn is None: return False
+
+        def within(x, y):
+            def __inner(z):
+                return x <= z and z <= y
+            return __inner
+
+        _lwithin = lambda s: within(self.min_length, self.max_length)(len(s.split()))
+        lwithin = _lwithin(predn.src) and _lwithin(predn.tgt)
+        pwithin = within(self.plb, self.pub)(-1*predn.ppl)
+        return lwithin and pwithin
 
             
 
