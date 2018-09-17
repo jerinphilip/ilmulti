@@ -1,4 +1,5 @@
 from langdetect import detect_langs
+from langdetect.lang_detect_exception import LangDetectException
 from . import Filter
 
 class LangDetect(Filter):
@@ -20,7 +21,10 @@ class PairDetect(Filter):
 
     def __call__(self, datum):
         first, second = datum
-        if not self.ffirst(first): return False
-        if not self.fsecond(second): return False
-        return True
+        try:
+            if not self.ffirst(first): return False
+            if not self.fsecond(second): return False
+            return True
+        except LangDetectException:
+            return False
 

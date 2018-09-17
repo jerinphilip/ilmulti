@@ -1,4 +1,5 @@
 from .bi import ParallelDataset
+from pf.filters import PairDetect
 
 class FairseqPrediction:
     def __init__(self, src=None, tgt=None, ppl=None):
@@ -45,7 +46,7 @@ class FairseqPrediction:
 class FairseqOutput(ParallelDataset):
     def __init__(self, path, src, tgt, 
             max_count=7500000, 
-            min_length=6, max_length=30, 
+            min_length=8, max_length=30, 
             plb=0.1, pub=0.4):
         self.path = path
         self.exts = (src, tgt)
@@ -56,6 +57,8 @@ class FairseqOutput(ParallelDataset):
 
         self.plb = 0.1
         self.pub = 0.4
+
+        self.langdetect = PairDetect(src, tgt, 0.99)
 
     def __iter__(self):
         self.counter = 0
@@ -91,8 +94,7 @@ class FairseqOutput(ParallelDataset):
         _lwithin = lambda s: within(self.min_length, self.max_length)(len(s.split()))
         lwithin = _lwithin(predn.src) and _lwithin(predn.tgt)
         pwithin = within(self.plb, self.pub)(-1*predn.ppl)
-        return lwithin and pwithin
-
-            
-
+        if lwithin and pwithin:
+            lang_ok = self.langdetect((predn.src, predn.tgt))
+            return lang_ok
 

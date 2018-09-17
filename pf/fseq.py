@@ -1,6 +1,6 @@
-
 import sys
 from pf.dataset import FairseqOutput
+from pf.dataset import ParallelWriter
 
 path = sys.argv[1]
 src = sys.argv[2]
