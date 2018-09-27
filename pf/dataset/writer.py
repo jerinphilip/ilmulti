@@ -1,3 +1,4 @@
+import os
 
 class ParallelWriter:
     def __init__(self, prefix, name, src, tgt):

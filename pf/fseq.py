@@ -1,16 +1,21 @@
 import sys
 from pf.dataset import FairseqOutput
 from pf.dataset import ParallelWriter
+from tqdm import tqdm
 
 path = sys.argv[1]
 src = sys.argv[2]
 tgt = sys.argv[3]
 
 dataset = FairseqOutput(path, src, tgt)
-for i, entry in enumerate(dataset):
+total_pairs = int(62151737/2)
+
+prefix = sys.argv[4]
+writer = ParallelWriter(prefix, 'train', src, tgt)
+
+for i, entry in tqdm(enumerate(dataset), total=total_pairs):
     src, tgt = entry
-    print(i, '>', src)
-    print(i, '<', tgt)
+    writer.write(src, tgt)
 
 
 
