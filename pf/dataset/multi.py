@@ -1,4 +1,5 @@
 from collections import deque
+from pf.utils import canonicalize
 
 class MultilingualDataset:
     def __init__(self, psets):
@@ -64,5 +65,28 @@ class MultilingualDataset:
         
 
 
-    
+class AgnosticTokenizedDataset(MultilingualDataset):
+    def __init__(self, psets, tokenizer):
+        super().__init__(psets)
+        self.tokenizer = tokenizer
 
+    def _refresh(self):
+        content = self.guarded_step()
+        src, tgt = content
+
+        def inject(lang, sequence):
+            ltok = '__t2{}__'.format(lang)
+            _lang, sequence = self.tokenizer(sequence, lang=lang)
+            sequence = '{} {}'.format(ltok, sequence)
+            return sequence
+
+        lsrc, ltgt = self.current_langs()
+        lsrc, ltgt = canonicalize(lsrc), canonicalize(ltgt)
+        p1 = (inject(ltgt, src), tgt)
+        p2 = (inject(lsrc, tgt), src)
+        p3 = (inject(lsrc, src), src)
+        p4 = (inject(ltgt, tgt), tgt)
+        self.queue.append(p1)
+        self.queue.append(p2)
+        self.queue.append(p3)
+        self.queue.append(p4)

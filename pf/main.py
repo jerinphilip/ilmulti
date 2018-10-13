@@ -7,8 +7,6 @@ import os
 from pf.dataset import ParallelWriter
 
 
-
-
 config_path = sys.argv[1]
 with open(config_path) as fp:
     config = yaml.load(fp)
@@ -23,6 +21,3 @@ with open(config_path) as fp:
         multi = MultilingualDataset([parallel])
         for i, (src, tgt) in tqdm(enumerate(multi)):
             writer.write(src, tgt)
-
-
-

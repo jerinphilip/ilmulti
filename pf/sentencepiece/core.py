@@ -2,6 +2,7 @@ from langdetect import detect_langs
 from langdetect.lang_detect_exception import LangDetectException
 import os
 import sentencepiece as spm
+from warnings import warn
 
 
 class SentencePieceTokenizer:
@@ -16,23 +17,29 @@ class SentencePieceTokenizer:
         self.tokenizer = {}
         self.units = units
 
-    def __call__(self, text):
-        best = detect_langs(text)[0]
-        tokenizer = self.get_tokenizer(best.lang)
-        text = tokenizer.EncodeAsPieces(text)
-        return (best.lang, text)
+    def __call__(self, text, lang=None):
+        if lang is None:
+            best = detect_langs(text)[0]
+            lang = best.lang
+
+        tokenizer = self.get_tokenizer(lang)
+        text = ' '.join(tokenizer.EncodeAsPieces(text))
+        return (lang, text)
 
     def get_tokenizer(self, lang):
         def get_model(lang):
             fname = '{lang}.{units}.model'.format(lang=lang, units=self.units)
             model_fpath = os.path.join(self.model_path, fname)
-            print(model_fpath)
             return model_fpath
 
         if lang not in self.tokenizer:
             sp = spm.SentencePieceProcessor() 
-            sp.Load(get_model(lang))
-            self.tokenizer[lang] = sp
+            try:
+                sp.Load(get_model(lang))
+                self.tokenizer[lang] = sp
+            except OSError:
+                warn("[SPM] {} not found, defaulting to en".format(lang))
+                lang = 'en'
 
         return self.tokenizer[lang]
 
