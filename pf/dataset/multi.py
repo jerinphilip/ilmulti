@@ -76,17 +76,21 @@ class AgnosticTokenizedDataset(MultilingualDataset):
 
         def inject(lang, sequence):
             ltok = '__t2{}__'.format(lang)
-            _lang, sequence = self.tokenizer(sequence, lang=lang)
             sequence = '{} {}'.format(ltok, sequence)
             return sequence
 
         lsrc, ltgt = self.current_langs()
         lsrc, ltgt = canonicalize(lsrc), canonicalize(ltgt)
+
+        _lang, src = self.tokenizer(src, lang=lsrc)
+        _lang, tgt = self.tokenizer(tgt, lang=ltgt)
+
         p1 = (inject(ltgt, src), tgt)
         p2 = (inject(lsrc, tgt), src)
-        p3 = (inject(lsrc, src), src)
-        p4 = (inject(ltgt, tgt), tgt)
         self.queue.append(p1)
         self.queue.append(p2)
-        self.queue.append(p3)
-        self.queue.append(p4)
+
+        # p3 = (inject(lsrc, src), src)
+        # p4 = (inject(ltgt, tgt), tgt)
+        # self.queue.append(p3)
+        # self.queue.append(p4)
