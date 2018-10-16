@@ -18,6 +18,9 @@ python3 setup.py install --user # user is optional
 A script which uses most parts is `pf/compile.py`. You may take a look
 at it, if you need further details.
 
+
+### `SentencePieceTokenizer`
+
 4K vocab sized [sentencepiece](https://github.com/google/sentencepiece)
 models are trained and prepared for the following languages.
 
@@ -29,21 +32,21 @@ models are trained and prepared for the following languages.
 6. Tamil
 7. Urdu
 
-### `SentencePieceTokenizer`
 
 ```py
+from pf.sentencepiece import SentencePieceTokenizer
 tokenizer = SentencePieceTokenizer()
 sequence = "Hello world!"
 tokenizer(sequence, lang='en') 
-
-# If lang is not supplied, langdetect is used to detect language.
-# If model doesn't exist for the said language, it defaults to english.
-
 ```
+
+If `lang` is not supplied, `langdetect` is used to detect language.
+If model doesn't exist for the said language, it defaults to english.
 
 ### `ParallelDataset`
 
 ```py
+from pf.dataset import ParallelDataset
 prefix = path/to/dataset/train
 exts = (<src>, <tgt>)
 parallel = ParallelDataset(prefix, exts)
@@ -55,7 +58,7 @@ for src, tgt in parallel:
 ### `MultilingualDataset`
 
 ```py
-
+from pf.dataset import ParallelDataset, MultilingualDataset
 pair1 = ParallelDataset(prefix1, exts1)
 pair2 = ParallelDataset(prefix2, exts2)
 multi = MultilingualDataset([prefix1, prefix2])
@@ -68,15 +71,29 @@ for src, tgt in multi:
 ### `AgnosticTokenizedDataset`
 
 This is additionally supplied with a language agnostic tokenizer enabled
-by sentencepiece + langdetect, and gives a dataset for multiway training.
-
+by sentencepiece + langdetect, and gives a dataset for multiway
+training.
 
 ```py
+from pf.dataset import AgnosticTokenizedDataset
 pairs = <list of ParallelDatasets>
 tokenizer = SentencePieceTokenizer()
 multi = AgnosticTokenizedDataset(pairs, tokenizer)
 for src, tgt in multi:
     print('>', src)
     print('<', tgt)
+```
+
+### `ParallelWriter`
+
+This is to convert a collection of parallel datasets to a multi-way trainable
+dataset.
 
 ```
+from pf.dataset import ParallelWriter
+writer = ParallelWriter('dump', 'test', 'src', 'tgt')
+for src, tgt in multi:
+    writer.write(src, tgt)
+```
+
+
