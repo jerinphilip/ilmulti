@@ -23,6 +23,7 @@ VERSION = None
 # What packages are required for this module to be executed?
 REQUIRED = [
     # 'requests', 'maya', 'records',
+    'langdetect', 'sentencepiece'
 ]
 
 # What packages are optional?
