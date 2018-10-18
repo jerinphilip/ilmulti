@@ -16,4 +16,11 @@ class ParallelDataset:
     def __iter__(self):
         return zip(iter(self.left), iter(self.right))
 
+    def get_mono_as_parallel(self):
+        src, tgt = self.exts
+        first = ParallelDataset(self.prefix, (src, src))
+        second = ParallelDataset(self.prefix, (tgt, tgt))
+        return (first, second)
+
+
 

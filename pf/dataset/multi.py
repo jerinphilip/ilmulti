@@ -42,7 +42,7 @@ class MultilingualDataset:
         src, tgt = content
 
         def inject(lang, sequence):
-            ltok = '__opt__{}__'.format(lang)
+            ltok = '__t2{}__'.format(lang)
             sequence = '{} {}'.format(ltok, sequence)
             return sequence
 
@@ -66,9 +66,10 @@ class MultilingualDataset:
 
 
 class AgnosticTokenizedDataset(MultilingualDataset):
-    def __init__(self, psets, tokenizer):
+    def __init__(self, psets, tokenizer, monolingual=False):
         super().__init__(psets)
         self.tokenizer = tokenizer
+        self.monolingual = monolingual
 
     def _refresh(self):
         content = self.guarded_step()
@@ -90,7 +91,8 @@ class AgnosticTokenizedDataset(MultilingualDataset):
         self.queue.append(p1)
         self.queue.append(p2)
 
-        # p3 = (inject(lsrc, src), src)
-        # p4 = (inject(ltgt, tgt), tgt)
-        # self.queue.append(p3)
-        # self.queue.append(p4)
+        if self.monolingual:
+            p3 = (inject(lsrc, src), src)
+            p4 = (inject(ltgt, tgt), tgt)
+            self.queue.append(p3)
+            self.queue.append(p4)
