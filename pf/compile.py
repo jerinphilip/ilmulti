@@ -5,6 +5,7 @@ from pf.filters import PairDetect
 from pf.sentencepiece import SentencePieceTokenizer
 import os
 from pf.dataset import ParallelWriter
+from pf.dataset import FakeParallelDataset
 from tqdm import tqdm
 
 # Create tokenizer
@@ -13,12 +14,16 @@ tokenizer = SentencePieceTokenizer()
 
 # Declare datasets
 
-class Collector(list):
-    def append(self, pset):
-        first, second = pset.get_mono_as_parallel()
-        super().append(pset)
-        super().append(first)
-        super().append(second)
+class Collector(set):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+
+    def add(self, pset):
+        super().add(pset)
+        if not pset.is_mono():
+            first, second = pset.get_mono_as_parallel()
+            super().add(first)
+            super().add(second)
 
 pairs = Collector()
 # 1: ILCI
@@ -32,7 +37,7 @@ for i in range(n):
         exts = (required[i], required[j])
         prefix = os.path.join(root, 'complete')
         parallel = ParallelDataset(prefix, exts)
-        pairs.append(parallel)
+        pairs.add(parallel)
 
 
 # 2: OpenSubs: OPUS
@@ -43,19 +48,36 @@ for lang in langs:
     prefix = os.path.join(root, _dir, 'train')
     exts = ('en', lang)
     parallel = ParallelDataset(prefix, exts)
-    pairs.append(parallel)
+    pairs.add(parallel)
 
 # 3: National Dataset
 root = '/Neutron5/jerin/consolidation/parallel/national'
 prefix = os.path.join(root, 'national')
 exts = ('en', 'hi')
 parallel = ParallelDataset(prefix, exts)
-pairs.append(parallel)
+pairs.add(parallel)
+
+
+# 4: Monolingual Available
+
+## Malayalam 
+
+root = '/Neutron5/jerin/malayalam-data/'
+prefix = os.path.join(root, 'all')
+ext = 'ml'
+parallel = FakeParallelDataset(prefix, ext)
+pairs.add(parallel)
+
 
 multi = AgnosticTokenizedDataset(pairs, tokenizer)
 writer = ParallelWriter('dump', 'train', 'src', 'tgt')
 for src, tgt in tqdm(multi):
     writer.write(src, tgt)
+
+
+
+# Dev Dataset
+# -----------------------------------------------------
 
 pairs = Collector()
 writer = ParallelWriter('dump', 'dev', 'src', 'tgt')
@@ -66,11 +88,14 @@ for lang in langs:
     prefix = os.path.join(root, _dir, 'dev')
     exts = ('en', lang)
     parallel = ParallelDataset(prefix, exts)
-    pairs.append(parallel)
+    pairs.add(parallel)
 
 multi = AgnosticTokenizedDataset(pairs, tokenizer)
 for src, tgt in tqdm(multi):
     writer.write(src, tgt)
+
+# Test Dataset
+# -----------------------------------------------------
 
 pairs = Collector()
 writer = ParallelWriter('dump', 'test', 'src', 'tgt')
@@ -82,8 +107,10 @@ for lang in langs:
     prefix = os.path.join(root, _dir, 'test')
     exts = ('en', lang)
     parallel = ParallelDataset(prefix, exts)
-    pairs.append(parallel)
+    pairs.add(parallel)
 
 multi = AgnosticTokenizedDataset(pairs, tokenizer)
 for src, tgt in tqdm(multi):
     writer.write(src, tgt)
+
+

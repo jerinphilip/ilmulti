@@ -13,6 +13,7 @@ class MultilingualDataset:
     def __iter__(self):
         self.current = -1
         self.queue = deque()
+        self.pset_iter = iter(self.psets)
         self.step()
         return self
 
@@ -20,7 +21,8 @@ class MultilingualDataset:
         self.current = self.current + 1
         if self.current >= len(self.psets):
             raise StopIteration
-        self.iter = iter(self.psets[self.current])
+        self.dset = next(self.pset_iter)
+        self.iter = iter(self.dset)
 
     def __next__(self):
         if not self.queue:
@@ -58,7 +60,7 @@ class MultilingualDataset:
 
 
     def current_langs(self):
-        src, tgt = self.psets[self.current].exts
+        src, tgt = self.dset.exts
         return src, tgt
 
 
