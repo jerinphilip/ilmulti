@@ -4,16 +4,43 @@ import os
 import sentencepiece as spm
 from warnings import warn
 
+class LazySPM:
+    def __init__(self, path, lang, units):
+        self.path = path
+        self.lang = lang
+        self.units = units
+        self.build_vocabulary()
+        self.load_model()
+
+    def load_model(self):
+        model_file = '{lang}.{units}.model'.format(lang=self.lang, units=self.units)
+        model_path = os.path.join(self.path, model_file)
+        self.model = spm.SentencePieceProcessor()
+        self.model.load(model_path)
+
+    def build_vocabulary(self):
+        vocab_file = '{}.{}.vocab'.format(self.lang, self.units)
+        vocab_path = os.path.join(self.path, vocab_file)
+        self.vocab = set()
+        with open(vocab_path) as fp:
+            for line in fp:
+                word, _ = line.strip().split()
+                self.vocab.add(word)
+
+    def __call__(self, text):
+        tokens = self.model.EncodeAsPieces(text)
+        # Clean unwanted tokens
+        clean = lambda x: x in self.vocab
+        tokens = list(filter(clean, tokens))
+        return tokens
 
 class SentencePieceTokenizer:
     def __init__(self, model_path=None, units=4000):
-
         if model_path is None:
             cdir = os.path.abspath(os.path.dirname(__file__))
             model_path = os.path.join(cdir, 'models')
 
         self.model_path = model_path
-
         self.tokenizer = {}
         self.units = units
 
@@ -23,26 +50,19 @@ class SentencePieceTokenizer:
             lang = best.lang
 
         tokenizer = self.get_tokenizer(lang)
-        text = ' '.join(tokenizer.EncodeAsPieces(text))
+        text = ' '.join(tokenizer(text))
         return (lang, text)
 
     def get_tokenizer(self, lang):
-        def get_model(lang):
-            fname = '{lang}.{units}.model'.format(lang=lang, units=self.units)
-            model_fpath = os.path.join(self.model_path, fname)
-            return model_fpath
-
         if lang not in self.tokenizer:
-            sp = spm.SentencePieceProcessor() 
             try:
-                sp.Load(get_model(lang))
-                self.tokenizer[lang] = sp
+                self.tokenizer[lang] = LazySPM(self.model_path, lang, self.units)
+                return self.tokenizer[lang]
             except OSError:
                 warn("[SPM] {} not found, defaulting to en".format(lang))
-                lang = 'en'
 
+        lang = 'en'
         return self.tokenizer[lang]
-
 
 if __name__ == '__main__':
     sp = SentencePieceTokenizer()

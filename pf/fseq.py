@@ -7,7 +7,7 @@ path = sys.argv[1]
 src = sys.argv[2]
 tgt = sys.argv[3]
 
-dataset = FairseqOutput(path, src, tgt)
+dataset = FairseqOutput(path, src, tgt, plb=0.4, pub=0.9, max_length=100)
 total_pairs = int(62151737/2)
 
 prefix = sys.argv[4]
