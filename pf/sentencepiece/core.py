@@ -43,6 +43,15 @@ class SentencePieceTokenizer:
         self.model_path = model_path
         self.tokenizer = {}
         self.units = units
+        self.load_models()
+
+    def load_models(self):
+        files = os.listdir(self.model_path)
+        model_files = filter(lambda f: ".model" in f, files)
+        for model_file in model_files:
+            lang, units, ext = model_file.split('.')
+            units = int(units)
+            self.tokenizer[(lang, units)] = LazySPM(self.model_path, lang, units)
 
     def __call__(self, text, lang=None):
         if lang is None:
@@ -53,18 +62,27 @@ class SentencePieceTokenizer:
         text = ' '.join(tokenizer(text))
         return (lang, text)
 
-    def get_tokenizer(self, lang):
-        if lang not in self.tokenizer:
-            try:
-                self.tokenizer[lang] = LazySPM(self.model_path, lang, self.units)
-                return self.tokenizer[lang]
-            except OSError:
-                warn("[SPM] {} not found, defaulting to en".format(lang))
+    def dictionary(self):
+        from fairseq.data.dictionary import Dictionary
+        dictionary = Dictionary()
 
-        lang = 'en'
-        return self.tokenizer[lang]
+        vocab = set()
+
+        for key in self.tokenizer:
+            tokenizer_vocab = self.tokenizer[key].vocab
+            vocab = vocab.union(tokenizer_vocab)
+
+        for word in vocab:
+            dictionary.add_symbol(word)
+
+        return dictionary
+
+    def get_tokenizer(self, lang):
+        default = self.tokenizer[("en", self.units)]
+        return self.tokenizer.get((lang, self.units), default)
 
 if __name__ == '__main__':
     sp = SentencePieceTokenizer()
     s = sp("Hello World")
+    print(sp.dictionary())
     print(s)
