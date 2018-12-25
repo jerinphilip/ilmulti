@@ -3,6 +3,7 @@ from langdetect.lang_detect_exception import LangDetectException
 import os
 import sentencepiece as spm
 from warnings import warn
+from pf.utils import language_token
 
 class LazySPM:
     def __init__(self, path, lang, units):
@@ -55,8 +56,11 @@ class SentencePieceTokenizer:
 
     def __call__(self, text, lang=None):
         if lang is None:
-            best = detect_langs(text)[0]
-            lang = best.lang
+            try:
+                best = detect_langs(text)[0]
+                lang = best.lang
+            except LangDetectException:
+                lang = 'en'
 
         tokenizer = self.get_tokenizer(lang)
         text = ' '.join(tokenizer(text))
@@ -67,6 +71,11 @@ class SentencePieceTokenizer:
         dictionary = Dictionary()
 
         vocab = set()
+
+        # Add language_tokens
+        langs, _ = list(zip(*self.tokenizer.keys()))
+        langs = list(map(language_token, langs))
+        vocab = vocab.union(set(langs))
 
         for key in self.tokenizer:
             tokenizer_vocab = self.tokenizer[key].vocab

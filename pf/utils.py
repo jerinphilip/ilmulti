@@ -12,3 +12,6 @@ def canonicalize(langcode):
 
     return inverse.get(langcode, langcode)
 
+
+def language_token(lang):
+    return '__t2{lang}__'.format(lang=lang)

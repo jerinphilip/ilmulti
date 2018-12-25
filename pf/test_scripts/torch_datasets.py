@@ -1,5 +1,7 @@
 
+
 from pf.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
+from pf.dataset.torch_dataset import TorchTensorParallelDataset
 from pf.dataset import AgnosticTokenizedDataset
 from pf.filters import PairDetect
 from pf.sentencepiece import SentencePieceTokenizer
@@ -21,6 +23,7 @@ class Collector(set):
     def add(self, pset):
         super().add(pset)
         if not pset.is_mono():
+            pass
             first, second = pset.get_mono_as_parallel()
             super().add(first)
             super().add(second)
@@ -68,8 +71,17 @@ ext = 'ml'
 parallel = FakeParallelDataset(prefix, ext)
 pairs.add(parallel)
 
+from pf.dataset.torch_dataset import TorchTensorMultiDataset
 
-multi = AgnosticTokenizedDataset(pairs, tokenizer)
+dataset = TorchTensorMultiDataset(pairs, tokenizer)
+for i in range(len(dataset)):
+    src, src_lengths, tgt, tgt_lengths = dataset[i]
+    print(src_lengths, tgt_lengths)
+exit()
+
+
+
+# multi = AgnosticTokenizedDataset(pairs, tokenizer)
 # writer = ParallelWriter('dump', 'train', 'src', 'tgt')
 # for src, tgt in tqdm(multi):
 #     writer.write(src, tgt)
@@ -89,7 +101,7 @@ for lang in langs:
     parallel = ParallelDataset(prefix, exts)
     pairs.add(parallel)
 
-multi = AgnosticTokenizedDataset(pairs, tokenizer)
+# multi = AgnosticTokenizedDataset(pairs, tokenizer)
 # writer = ParallelWriter('dump', 'dev', 'src', 'tgt')
 # for src, tgt in tqdm(multi):
 #     writer.write(src, tgt)
@@ -108,7 +120,7 @@ for lang in langs:
     parallel = ParallelDataset(prefix, exts)
     pairs.add(parallel)
 
-multi = AgnosticTokenizedDataset(pairs, tokenizer)
+# multi = AgnosticTokenizedDataset(pairs, tokenizer)
 # writer = ParallelWriter('dump', 'test', 'src', 'tgt')
 # for src, tgt in tqdm(multi):
 #     writer.write(src, tgt)

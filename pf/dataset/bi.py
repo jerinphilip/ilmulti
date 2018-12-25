@@ -11,8 +11,8 @@ class ParallelDataset:
         left = '{}.{}'.format(prefix, src)
         right = '{}.{}'.format(prefix, tgt)
 
-        self.left = MonolingualDataset(left)
-        self.right = MonolingualDataset(right)
+        self.left = MonolingualDataset(left, src)
+        self.right = MonolingualDataset(right, tgt)
 
     def is_mono(self):
         return False
@@ -48,4 +48,5 @@ class FakeParallelDataset(ParallelDataset):
 
     def is_mono(self):
         return True
+
 
