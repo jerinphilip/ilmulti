@@ -117,9 +117,9 @@ class TorchTensorParallelDataset(Dataset):
     def  __getitem__(self, idx):
         def swap_lang_token(src, tgt):
             src_lang_token = src[0].clone()
-            tgt_lang_token = tgt[0].clone()
+            tgt_lang_token = tgt[1].clone()
             src[0] = tgt_lang_token
-            tgt[0] = src_lang_token
+            tgt[1] = src_lang_token
             return src, tgt
 
         src, src_length = self.left[idx]
