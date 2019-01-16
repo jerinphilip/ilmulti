@@ -75,8 +75,11 @@ from pf.dataset.torch_dataset import TorchTensorMultiDataset
 
 dataset = TorchTensorMultiDataset(pairs, tokenizer)
 for i in range(len(dataset)):
-    src, src_lengths, tgt, tgt_lengths = dataset[i]
+    src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+    print('> ', ' '.join(src_tokens))
+    print('< ', ' '.join(tgt_tokens))
     print(src_lengths, tgt_lengths)
+    print()
 exit()
 
 
@@ -119,6 +122,7 @@ for lang in langs:
     exts = ('en', lang)
     parallel = ParallelDataset(prefix, exts)
     pairs.add(parallel)
+
 
 # multi = AgnosticTokenizedDataset(pairs, tokenizer)
 # writer = ParallelWriter('dump', 'test', 'src', 'tgt')

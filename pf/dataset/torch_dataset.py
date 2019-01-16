@@ -40,13 +40,15 @@ class TorchTensorMonoDataset(Dataset):
 
     def build(self):
         self.built = True
-        lines = open(self.dataset.path)
-
-        pbar = tqdm(lines, desc=self.dataset.path)
-        for line in pbar:
-            contents = line.strip()
-            sample = self._toTensor(contents)
-            self.samples.append(sample)
+        with open(self.dataset.path) as fp:
+            contents = fp.read()
+            self.lines = contents.splitlines()
+            self.length = len(self.lines)
+            # pbar = tqdm(lines, desc=self.dataset.path)
+            # for line in pbar:
+            #     cleaned = line.strip()
+            #     sample = self._toTensor(cleaned)
+            #     self.samples.append(sample)
 
     def __len__(self):
         assert ( self.built )
@@ -75,10 +77,13 @@ class TorchTensorMonoDataset(Dataset):
             idxs.append(self.vocab.eos())
 
         idxs = torch.LongTensor(idxs)
-        return [idxs, len(idxs)]
+        tokens = self.vocab.string(idxs)
+        return [idxs, tokens, len(idxs)]
 
     def __getitem__(self, idx):
-        return self.samples[idx]
+        line = self.lines[idx].strip()
+        sample = self._toTensor(line)
+        return sample
 
     @staticmethod
     def collate(lsamples):
@@ -95,7 +100,7 @@ class TorchTensorParallelDataset(Dataset):
 
         if tgt_tokenize is None: tgt_tokenize = src_tokenize
         if tgt_vocab is None: tgt_vocab = src_vocab
-
+        
         self.dataset = parallel_dataset
 
         left = TorchTensorMonoDataset(
@@ -119,15 +124,20 @@ class TorchTensorParallelDataset(Dataset):
             src_lang_token = src[0].clone()
             tgt_lang_token = tgt[1].clone()
             src[0] = tgt_lang_token
-            tgt[1] = src_lang_token
+            # tgt[1] = src_lang_token
+            tgt = torch.cat([tgt[:1], tgt[2:]])
             return src, tgt
 
-        src, src_length = self.left[idx]
-        tgt, tgt_length = self.right[idx]
+        src_idxs, src_tokens, src_length = self.left[idx]
+        tgt_idxs, tgt_tokens, tgt_length = self.right[idx]
 
-        src, tgt = swap_lang_token(src, tgt)
+        src_idxs, tgt_idxs = swap_lang_token(src_idxs, tgt_idxs)
 
-        return (src, src_length, tgt, tgt_length)
+        src_tokens = self.left.vocab.string(src_idxs).split()
+        tgt_tokens = self.right.vocab.string(tgt_idxs).split()
+
+        return (src_idxs, src_tokens, src_length, 
+                tgt_idxs, tgt_tokens, tgt_length)
 
     @staticmethod
     def collate(lsamples):

@@ -32,6 +32,7 @@ class LazySPM:
         tokens = self.model.EncodeAsPieces(text)
         # Clean unwanted tokens
         clean = lambda x: x in self.vocab
+        print(self.lang, self.units, tokens)
         tokens = list(filter(clean, tokens))
         return tokens
 
@@ -63,8 +64,9 @@ class SentencePieceTokenizer:
                 lang = 'en'
 
         tokenizer = self.get_tokenizer(lang)
-        text = ' '.join(tokenizer(text))
-        return (lang, text)
+        # text = ' '.join(tokenizer(text))
+        tokens = tokenizer(text)
+        return (lang, tokens)
 
     def dictionary(self):
         from fairseq.data.dictionary import Dictionary
