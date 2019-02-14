@@ -1,7 +1,5 @@
-
-
 from pf.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
-from pf.dataset.torch_dataset import TorchTensorParallelDataset
+from pf.dataset.torch import TensorParallelDataset
 from pf.dataset import AgnosticTokenizedDataset
 from pf.filters import PairDetect
 from pf.sentencepiece import SentencePieceTokenizer
@@ -13,6 +11,9 @@ from tqdm import tqdm
 # Create tokenizer
 
 tokenizer = SentencePieceTokenizer()
+dictionary = tokenizer.dictionary()
+dictionary.save("mm-raw/vocab.dict")
+exit()
 
 # Declare datasets
 
@@ -32,6 +33,15 @@ pairs = Collector()
 # 1: ILCI
 # C(N, 2) Pairs.
 
+def augmented(prefix, exts):
+    src, tgt = exts
+    return  [
+        ParallelDataset(prefix, (src, tgt)),
+        ParallelDataset(prefix, (tgt, src)),
+        FakeParallelDataset(prefix, src),
+        FakeParallelDataset(prefix, tgt)
+    ]
+
 root = '/Neutron5/jerin/consolidation/parallel/ilci/'
 required = ['bg', 'en', 'hi', 'ml', 'ta', 'te', 'ud']
 n = len(required)
@@ -39,8 +49,10 @@ for i in range(n):
     for j in range(i+1, n):
         exts = (required[i], required[j])
         prefix = os.path.join(root, 'complete')
-        parallel = ParallelDataset(prefix, exts)
-        pairs.add(parallel)
+        # parallel = ParallelDataset(prefix, exts)
+        parallels = augmented(prefix, exts)
+        for parallel in parallels:
+            pairs.add(parallel)
 
 
 # 2: OpenSubs: OPUS
@@ -50,36 +62,40 @@ for lang in langs:
     _dir = 'multiway-{}-en'.format(lang)
     prefix = os.path.join(root, _dir, 'train')
     exts = ('en', lang)
-    parallel = ParallelDataset(prefix, exts)
-    pairs.add(parallel)
+    parallels = augmented(prefix, exts)
+    for parallel in parallels:
+        pairs.add(parallel)
 
 # 3: National Dataset
 root = '/Neutron5/jerin/consolidation/parallel/national'
 prefix = os.path.join(root, 'national')
 exts = ('en', 'hi')
-parallel = ParallelDataset(prefix, exts)
-pairs.add(parallel)
+# parallel = ParallelDataset(prefix, exts)
+parallels = augmented(prefix, exts)
+for parallel in parallels:
+    pairs.add(parallel)
 
 
 # 4: Monolingual Available
-
 ## Malayalam 
-
 root = '/Neutron5/jerin/malayalam-data/'
 prefix = os.path.join(root, 'all')
 ext = 'ml'
 parallel = FakeParallelDataset(prefix, ext)
 pairs.add(parallel)
 
-from pf.dataset.torch_dataset import TorchTensorMultiDataset
+# 5: IIT-Bombay
 
-dataset = TorchTensorMultiDataset(pairs, tokenizer)
+from pf.dataset.torch import TensorMultiDataset
+
+dataset = TensorMultiDataset(pairs, tokenizer)
+writer = ParallelWriter('mm-raw', 'train', 'src', 'tgt')
 for i in range(len(dataset)):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
-    print('> ', ' '.join(src_tokens))
-    print('< ', ' '.join(tgt_tokens))
-    print(src_lengths, tgt_lengths)
-    print()
+    f = lambda x:  ' '.join(x)
+    source_sentence = f(src_tokens)
+    target_sentence = f(tgt_tokens)
+    writer.write(source_sentence, target_sentence)
 exit()
 
 

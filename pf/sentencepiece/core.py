@@ -32,7 +32,7 @@ class LazySPM:
         tokens = self.model.EncodeAsPieces(text)
         # Clean unwanted tokens
         clean = lambda x: x in self.vocab
-        print(self.lang, self.units, tokens)
+        # print(self.lang, self.units, tokens)
         tokens = list(filter(clean, tokens))
         return tokens
 
@@ -50,6 +50,7 @@ class SentencePieceTokenizer:
     def load_models(self):
         files = os.listdir(self.model_path)
         model_files = filter(lambda f: ".model" in f, files)
+        model_files = filter(lambda f: "{}".format(self.units) in f, files)
         for model_file in model_files:
             lang, units, ext = model_file.split('.')
             units = int(units)
@@ -82,9 +83,13 @@ class SentencePieceTokenizer:
         for key in self.tokenizer:
             tokenizer_vocab = self.tokenizer[key].vocab
             vocab = vocab.union(tokenizer_vocab)
+            print("Vocab tokens: ", key, len(tokenizer_vocab))
 
         for word in vocab:
             dictionary.add_symbol(word)
+
+        print("Vocab tokens:", len(vocab))
+        print("Non-control:", len(vocab) - len(langs))
 
         return dictionary
 
