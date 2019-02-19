@@ -18,9 +18,9 @@ dictionary.save("mm-raw/vocab.dict")
 # exit()
 
 # Declare datasets
+mininterval = 100
 
 def dfilter(sset, ext):
-    return sset
     ls = []
     for dataset in sset:
         if ext in dataset.exts:
@@ -43,16 +43,16 @@ class Collector(set):
 pairs = Collector()
 # 1: ILCI
 # C(N, 2) Pairs.
-
-def augmented(prefix, exts):
-    src, tgt = exts
-    return  [
-        ParallelDataset(prefix, (src, tgt)),
-        ParallelDataset(prefix, (tgt, src)),
-        FakeParallelDataset(prefix, src),
-        FakeParallelDataset(prefix, tgt)
-    ]
-
+# 
+# def augmented(prefix, exts):
+#     src, tgt = exts
+#     return  [
+#         ParallelDataset(prefix, (src, tgt)),
+#         ParallelDataset(prefix, (tgt, src)),
+#         FakeParallelDataset(prefix, src),
+#         FakeParallelDataset(prefix, tgt)
+#     ]
+# 
 def augmented(prefix, exts):
     src, tgt = exts
     return  [
@@ -141,7 +141,7 @@ for parallel in parallels:
 pairs = dfilter(pairs, 'ml')
 dataset = TensorMultiDataset(pairs, tokenizer)
 writer = ParallelWriter('mm-raw', 'dev', 'src', 'tgt')
-for i in trange(len(dataset)):
+for i in trange(len(dataset), mininterval=mininterval):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
@@ -176,12 +176,12 @@ for parallel in parallels:
 pairs = dfilter(pairs, 'ml')
 dataset = TensorMultiDataset(pairs, tokenizer)
 writer = ParallelWriter('mm-raw', 'test', 'src', 'tgt')
-for i in trange(len(dataset)):
+print(len(dataset))
+for i in trange(len(dataset), mininterval=mininterval):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
     target_sentence = f(tgt_tokens)
     writer.write(source_sentence, target_sentence)
-    writer.write(src, tgt)
 
 

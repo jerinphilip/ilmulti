@@ -37,9 +37,11 @@ class TensorMonoDataset(Dataset):
 		    lang=self.dataset.lang
                 )
 
-                tokens = [language_token] + tokens
+                lang_token = language_token(self.dataset.lang)
+                tokens = [lang_token] + tokens
                 self.sizes.append(len(tokens))
                 self.samples.append(tokens)
+            self.length = len(lines)
 
     def __len__(self):
         assert ( self.built )
