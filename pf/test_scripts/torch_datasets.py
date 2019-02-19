@@ -3,19 +3,30 @@ from pf.dataset.torch import TensorParallelDataset
 from pf.dataset import AgnosticTokenizedDataset
 from pf.filters import PairDetect
 from pf.sentencepiece import SentencePieceTokenizer
+from pf.dataset.torch import TensorMultiDataset
 import os
 from pf.dataset import ParallelWriter
 from pf.dataset import FakeParallelDataset
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 # Create tokenizer
 
 tokenizer = SentencePieceTokenizer()
+from argparse import ArgumentParser
 dictionary = tokenizer.dictionary()
 dictionary.save("mm-raw/vocab.dict")
-exit()
+# exit()
 
 # Declare datasets
+
+def dfilter(sset, ext):
+    return sset
+    ls = []
+    for dataset in sset:
+        if ext in dataset.exts:
+            ls.append(dataset)
+    return set(ls)
+
 
 class Collector(set):
     def __init__(self, *args, **kwargs):
@@ -42,6 +53,13 @@ def augmented(prefix, exts):
         FakeParallelDataset(prefix, tgt)
     ]
 
+def augmented(prefix, exts):
+    src, tgt = exts
+    return  [
+        ParallelDataset(prefix, (src, tgt)),
+        ParallelDataset(prefix, (tgt, src)),
+    ]
+
 root = '/Neutron5/jerin/consolidation/parallel/ilci/'
 required = ['bg', 'en', 'hi', 'ml', 'ta', 'te', 'ud']
 n = len(required)
@@ -49,7 +67,6 @@ for i in range(n):
     for j in range(i+1, n):
         exts = (required[i], required[j])
         prefix = os.path.join(root, 'complete')
-        # parallel = ParallelDataset(prefix, exts)
         parallels = augmented(prefix, exts)
         for parallel in parallels:
             pairs.add(parallel)
@@ -85,27 +102,16 @@ parallel = FakeParallelDataset(prefix, ext)
 pairs.add(parallel)
 
 # 5: IIT-Bombay
-
-from pf.dataset.torch import TensorMultiDataset
+pairs = dfilter(pairs, 'ml')
 
 dataset = TensorMultiDataset(pairs, tokenizer)
 writer = ParallelWriter('mm-raw', 'train', 'src', 'tgt')
-for i in range(len(dataset)):
+for i in trange(len(dataset)):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
     target_sentence = f(tgt_tokens)
     writer.write(source_sentence, target_sentence)
-exit()
-
-
-
-# multi = AgnosticTokenizedDataset(pairs, tokenizer)
-# writer = ParallelWriter('dump', 'train', 'src', 'tgt')
-# for src, tgt in tqdm(multi):
-#     writer.write(src, tgt)
-
-
 
 # Dev Dataset
 # -----------------------------------------------------
@@ -117,13 +123,30 @@ for lang in langs:
     _dir = 'multiway-{}-en'.format(lang)
     prefix = os.path.join(root, _dir, 'dev')
     exts = ('en', lang)
-    parallel = ParallelDataset(prefix, exts)
+    parallels = augmented(prefix, exts)
+    # parallel = ParallelDataset(prefix, exts)
+    for parallel in parallels:
+        pairs.add(parallel)
+
+root = '/Neutron5/jerin/consolidation/parallel/f-iitb/f-iitb'
+_dir = ''.format(lang)
+prefix = os.path.join(root, 'dev')
+exts = ('en', 'hi')
+parallels = augmented(prefix, exts)
+# parallel = ParallelDataset(prefix, exts)
+for parallel in parallels:
     pairs.add(parallel)
 
 # multi = AgnosticTokenizedDataset(pairs, tokenizer)
-# writer = ParallelWriter('dump', 'dev', 'src', 'tgt')
-# for src, tgt in tqdm(multi):
-#     writer.write(src, tgt)
+pairs = dfilter(pairs, 'ml')
+dataset = TensorMultiDataset(pairs, tokenizer)
+writer = ParallelWriter('mm-raw', 'dev', 'src', 'tgt')
+for i in trange(len(dataset)):
+    src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+    f = lambda x:  ' '.join(x)
+    source_sentence = f(src_tokens)
+    target_sentence = f(tgt_tokens)
+    writer.write(source_sentence, target_sentence)
 
 # Test Dataset
 # -----------------------------------------------------
@@ -136,13 +159,29 @@ for lang in langs:
     _dir = 'multiway-{}-en'.format(lang)
     prefix = os.path.join(root, _dir, 'test')
     exts = ('en', lang)
-    parallel = ParallelDataset(prefix, exts)
+    parallels = augmented(prefix, exts)
+    # parallel = ParallelDataset(prefix, exts)
+    for parallel in parallels:
+        pairs.add(parallel)
+
+root = '/Neutron5/jerin/consolidation/parallel/f-iitb/f-iitb'
+_dir = ''.format(lang)
+prefix = os.path.join(root, 'test')
+exts = ('en', 'hi')
+parallels = augmented(prefix, exts)
+# parallel = ParallelDataset(prefix, exts)
+for parallel in parallels:
     pairs.add(parallel)
 
-
-# multi = AgnosticTokenizedDataset(pairs, tokenizer)
-# writer = ParallelWriter('dump', 'test', 'src', 'tgt')
-# for src, tgt in tqdm(multi):
-#     writer.write(src, tgt)
+pairs = dfilter(pairs, 'ml')
+dataset = TensorMultiDataset(pairs, tokenizer)
+writer = ParallelWriter('mm-raw', 'test', 'src', 'tgt')
+for i in trange(len(dataset)):
+    src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+    f = lambda x:  ' '.join(x)
+    source_sentence = f(src_tokens)
+    target_sentence = f(tgt_tokens)
+    writer.write(source_sentence, target_sentence)
+    writer.write(src, tgt)
 
 

@@ -47,7 +47,7 @@ class TensorParallelDataset(Dataset):
         src_idxs, src_tokens, src_length = self.left[idx]
         tgt_idxs, tgt_tokens, tgt_length = self.right[idx]
 
-        src_idxs, tgt_idxs = swap_lang_token(src_idxs, tgt_idxs)
+        # src_idxs, tgt_idxs = swap_lang_token(src_idxs, tgt_idxs)
 
         src_tokens = self.left.vocab.string(src_idxs).split()
         tgt_tokens = self.right.vocab.string(tgt_idxs).split()

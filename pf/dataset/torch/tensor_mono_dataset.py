@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 from pf.utils import language_token
 from .utils import id_filter
+from tqdm import tqdm
 
 
 class TensorMonoDataset(Dataset):
@@ -13,6 +14,7 @@ class TensorMonoDataset(Dataset):
         self.vocab = vocab
         self.move_eos_to_beginning = move_eos_to_beginning
         self.length = 0
+        self.sizes = []
         self.samples = []
         self.built = False
         self.filter = _filter
@@ -24,13 +26,20 @@ class TensorMonoDataset(Dataset):
         self.built = True
         with open(self.dataset.path) as fp:
             contents = fp.read()
-            self.lines = contents.splitlines()
-            self.length = len(self.lines)
-            # pbar = tqdm(lines, desc=self.dataset.path)
-            # for line in pbar:
-            #     cleaned = line.strip()
-            #     sample = self._toTensor(cleaned)
-            #     self.samples.append(sample)
+            lines = contents.splitlines()
+            pbar = tqdm(
+                lines,
+                desc="tokenize-{}".format(self.dataset.path)
+            )
+            for line in pbar:
+                lang, tokens = self.tokenize(
+		    line, 
+		    lang=self.dataset.lang
+                )
+
+                tokens = [language_token] + tokens
+                self.sizes.append(len(tokens))
+                self.samples.append(tokens)
 
     def __len__(self):
         assert ( self.built )
@@ -39,18 +48,14 @@ class TensorMonoDataset(Dataset):
     def dummy_item(self):
         return _toTensor('')
 
-    def _toTensor(self, contents):
-        lang, tokens = self.tokenize(contents)
-
+    def _toTensor(self, idx):
+        tokens = self.samples[idx]
         idxs = []
 
         if self.move_eos_to_beginning:
             idxs.append(self.vocab.eos())
 
         # Prepend Language Token
-        lang_token = language_token(lang)
-        lang_idx = self.vocab.index(lang_token)
-        idxs.append(lang_idx)
 
         for token in tokens:
             idxs.append(self.vocab.index(token))
@@ -63,14 +68,13 @@ class TensorMonoDataset(Dataset):
         return [idxs, tokens, len(idxs)]
 
     def __getitem__(self, idx):
-        line = self.lines[idx].strip()
-        sample = self._toTensor(line)
+        sample = self._toTensor(idx)
         return sample
 
     @staticmethod
     def collate(lsamples):
-        idxs, lengths = list(zip(*lsamples))
+        idxs, tokens, lengths = list(zip(*lsamples))
         idxs = torch.stack(idxs, dim=0)
         lengths = torch.LongTensor(idxs)
-        return (idxs, lengths)
+        return (idxs, tokens, lengths)
 
