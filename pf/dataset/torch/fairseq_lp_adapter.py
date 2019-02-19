@@ -1,5 +1,5 @@
-
 from fairseq.data.language_pair_dataset import LanguagePairDataset, collate
+from fairseq import utils
 from .tensor_parallel_dataset import TensorParallelDataset
 
 class LPAdapter(FairseqDataset):

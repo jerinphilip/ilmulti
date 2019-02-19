@@ -95,11 +95,11 @@ for parallel in parallels:
 
 # 4: Monolingual Available
 ## Malayalam 
-root = '/Neutron5/jerin/malayalam-data/'
-prefix = os.path.join(root, 'all')
-ext = 'ml'
-parallel = FakeParallelDataset(prefix, ext)
-pairs.add(parallel)
+# root = '/Neutron5/jerin/malayalam-data/'
+# prefix = os.path.join(root, 'all')
+# ext = 'ml'
+# parallel = FakeParallelDataset(prefix, ext)
+# pairs.add(parallel)
 
 # 5: IIT-Bombay
 pairs = dfilter(pairs, 'ml')
