@@ -108,6 +108,11 @@ dataset = TensorMultiDataset(pairs, tokenizer)
 writer = ParallelWriter('mm-raw', 'train', 'src', 'tgt')
 for i in trange(len(dataset)):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+
+    src_lang_token, *src_tokens = src_tokens
+    tgt_lang_token, *tgt_tokens = tgt_tokens
+    src_tokens = [tgt_lang_token] + src_tokens
+
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
     target_sentence = f(tgt_tokens)
@@ -143,6 +148,11 @@ dataset = TensorMultiDataset(pairs, tokenizer)
 writer = ParallelWriter('mm-raw', 'dev', 'src', 'tgt')
 for i in trange(len(dataset), mininterval=mininterval):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+
+    src_lang_token, *src_tokens = src_tokens
+    tgt_lang_token, *tgt_tokens = tgt_tokens
+    src_tokens = [tgt_lang_token] + src_tokens
+
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
     target_sentence = f(tgt_tokens)
@@ -179,6 +189,9 @@ writer = ParallelWriter('mm-raw', 'test', 'src', 'tgt')
 print(len(dataset))
 for i in trange(len(dataset), mininterval=mininterval):
     src, src_tokens, src_lengths, tgt, tgt_tokens, tgt_lengths = dataset[i]
+    src_lang_token, *src_tokens = src_tokens
+    tgt_lang_token, *tgt_tokens = tgt_tokens
+    src_tokens = [tgt_lang_token] + src_tokens
     f = lambda x:  ' '.join(x)
     source_sentence = f(src_tokens)
     target_sentence = f(tgt_tokens)

@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from pf.utils import language_token
+from pf.utils import language_token, canonicalize
 from .utils import id_filter
 from tqdm import tqdm
 
@@ -31,13 +31,15 @@ class TensorMonoDataset(Dataset):
                 lines,
                 desc="tokenize-{}".format(self.dataset.path)
             )
+            lang = canonicalize(self.dataset.lang)
+
             for line in pbar:
                 lang, tokens = self.tokenize(
 		    line, 
-		    lang=self.dataset.lang
+		    lang=lang
                 )
 
-                lang_token = language_token(self.dataset.lang)
+                lang_token = language_token(lang)
                 tokens = [lang_token] + tokens
                 self.sizes.append(len(tokens))
                 self.samples.append(tokens)
