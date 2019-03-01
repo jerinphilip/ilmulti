@@ -2,19 +2,19 @@ from fairseq.data.language_pair_dataset import LanguagePairDataset, collate
 from fairseq import utils
 from .tensor_parallel_dataset import TensorParallelDataset
 
-class LPAdapter(FairseqDataset):
+class LPAdapter(LanguagePairDataset):
     def __init__(
             self, pf_parallel, duplex=True,
             left_pad_source=True, left_pad_target=False,
             max_source_positions=1024, max_target_positions=1024,
             shuffle=True, input_feeding=True, remove_eos_from_source=False,
-            append_eos_target=False,
+            append_eos_to_target=False,
     ):
         assert(isinstance(pf_parallel, TensorParallelDataset))
 
         self.duplex = duplex
         self.dataset = pf_parallel
-	self.left_pad_source = left_pad_source
+        self.left_pad_source = left_pad_source
         self.left_pad_target = left_pad_target
         self.max_source_positions = max_source_positions
         self.max_target_positions = max_target_positions
@@ -24,8 +24,8 @@ class LPAdapter(FairseqDataset):
         self.append_eos_to_target = append_eos_to_target
         self.src_dict = self.dataset.left.vocab
         self.tgt_dict = self.dataset.right.vocab
-	self.src_sizes = self.dataset.left.sizes + self.dataset.right.sizes
-	self.tgt_sizes = self.dataset.right.sizes + self.dataset.left.sizes
+        self.src_sizes = self.dataset.left.sizes + self.dataset.right.sizes
+        self.tgt_sizes = self.dataset.right.sizes + self.dataset.left.sizes
         assert(self.src_dict == self.tgt_dict)
 
     def __len__(self):
@@ -38,7 +38,7 @@ class LPAdapter(FairseqDataset):
         src, tgt = items[:3], items[3:]
         if _qidx:
             src, tgt = tgt, src
-
+        
         src_idxs, src_tokens, src_lengths = src
         tgt_idxs, tgt_tokens, tgt_lengths = tgt
 
@@ -48,8 +48,8 @@ class LPAdapter(FairseqDataset):
             src[0] = tgt_lang_token
             tgt = tgt[1:]
             return src, tgt
-	
-	src_idxs, tgt_idxs = swap_lang_token(src_idxs, tgt_idxs)
+
+        src_idxs, tgt_idxs = swap_lang_token(src_idxs, tgt_idxs)
 
         if self.append_eos_to_target:
             eos = self.tgt_dict.eos() if self.tgt_dict else self.src_dict.eos()

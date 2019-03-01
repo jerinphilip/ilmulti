@@ -85,6 +85,7 @@ class SentencePieceTokenizer:
             vocab = vocab.union(tokenizer_vocab)
             # print("Vocab tokens: ", key, len(tokenizer_vocab))
 
+        vocab = sorted(list(vocab))
         for word in vocab:
             dictionary.add_symbol(word)
 
