@@ -66,14 +66,16 @@ class TensorParallelDataset(Dataset):
 
 
     @staticmethod
-    def collate(lsamples):
-        srcs, src_lengths, tgts, tgt_lengths = list(zip(*samples))
+    def collate(samples):
+        src_idxs, src_tokens, src_lengths, \
+                tgt_idxs, tgt_tokens, tgt_lengths = list(zip(*samples))
 
         # assumes pad value is zero
-        srcs = pad_sequence(srcs, batch_first=True)
-        tgts = pad_sequence(tgts, batch_first=True)
+        src_idxs = pad_sequence(src_idxs, batch_first=True)
+        tgt_idxs = pad_sequence(tgt_idxs, batch_first=True)
 
         src_lengths = torch.LongTensor(src_lengths)
         tgt_lengths = torch.LongTensor(tgt_lengths)
 
-        return (srcs, src_lengths, tgts, tgt_lengths)
+        return (src_idxs, src_tokens, src_lengths, \
+                tgt_idxs, tgt_tokens, tgt_lengths)

@@ -26,14 +26,14 @@ class MGANAdapter:
         return previous
 
     def __len__(self):
-        reutrn self._length
+        return self._length
 
     def __getitem__(self, idx):
-	# Find the rightmost entry less than idx
+    # Find the rightmost entry less than idx
         p_idx = bisect.bisect_right(self.cumulative, idx)
         j = idx - self.cumulative[p_idx-1]
         contents = self.dataset[p_idx-1]
-	idxs, tokens, length = contents
+        idxs, tokens, length = contents
         segment = idxs[j:j+self.truncate]
         item = deepcopy(segment)
         return item

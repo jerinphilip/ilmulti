@@ -31,14 +31,11 @@ class TensorMonoDataset(Dataset):
                 lines,
                 desc="tokenize-{}".format(self.dataset.path)
             )
+
             lang = canonicalize(self.dataset.lang)
 
             for line in pbar:
-                lang, tokens = self.tokenize(
-		    line, 
-		    lang=lang
-                )
-
+                lang, tokens = self.tokenize(line, lang=lang)
                 lang_token = language_token(lang)
                 tokens = [lang_token] + tokens
                 self.sizes.append(len(tokens))
