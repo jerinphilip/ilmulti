@@ -1,3 +1,4 @@
+import re
 
 class PatternSegmenter:
     def __init__(self, pattern):
@@ -15,7 +16,7 @@ class Segmenter:
         patterns = {
             "en": "([.;!?…])",
             "ur": "([.;!?…])",
-            "hi": "([_;!?_|I])",
+            "hi": "([।;!?…|I])",
             "default": "([.;!?…])"
 
         }
