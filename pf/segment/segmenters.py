@@ -10,7 +10,15 @@ class PatternSegmenter:
         "returns segments"
         paragraph = re.sub(r'[.]+', '.', paragraph)
         segments = self.pattern.split(paragraph)
-        return segments
+        cleaned = []
+        n = len(segments)
+        for i in range(0, n, 2):
+            first = segments[i]
+            second = segments[i+1] if i+1 < n else ''
+            _cleaned = '{}{}'.format(first, second)
+            _cleaned = _cleaned.lstrip().rstrip()
+            cleaned.append(_cleaned)
+        return cleaned
 
 class Segmenter:
     def __init__(self):
@@ -22,8 +30,9 @@ class Segmenter:
             "default": "([.;!?…])"
 
         }
-        for pattern in patterns:
-            self._segmenter[pattern] = PatternSegmenter(pattern)
+        for lang in patterns:
+            pattern = patterns[lang]
+            self._segmenter[lang] = PatternSegmenter(pattern)
 
     def __call__(self, paragraph, lang=None):
         _lang, prob = langid.classify(paragraph)
