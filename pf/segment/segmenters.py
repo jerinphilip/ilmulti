@@ -1,4 +1,6 @@
 import re
+import langid
+import warnings
 
 class PatternSegmenter:
     def __init__(self, pattern):
@@ -7,7 +9,7 @@ class PatternSegmenter:
     def __call__(self, paragraph):
         "returns segments"
         paragraph = re.sub(r'[.]+', '.', paragraph)
-        segments = self.pattern.split(text)
+        segments = self.pattern.split(paragraph)
         return segments
 
 class Segmenter:
@@ -35,3 +37,4 @@ class Segmenter:
         
         default = self._segmenter["default"]
         segmenter = self._segmenter.get(lang, default)
+        return (_lang, segmenter(paragraph))
