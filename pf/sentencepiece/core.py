@@ -69,6 +69,15 @@ class SentencePieceTokenizer:
         tokens = tokenizer(text)
         return (lang, tokens)
 
+    def detokenize(self, value):
+        SPM_SYMBOL = '▁'
+        value = value.replace(' ', '')
+        value = value.replace(SPM_SYMBOL, ' ')
+        if value[0] == ' ':
+            value = value[1:]
+        return value
+
+
     def dictionary(self):
         from fairseq.data.dictionary import Dictionary
         dictionary = Dictionary()
