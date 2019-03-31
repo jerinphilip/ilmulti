@@ -12,18 +12,20 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'pf'
-DESCRIPTION = 'My short description for my project.'
-URL = 'https://github.com/jerinphilip/parallel-filtering'
-EMAIL = 'me@example.com'
-AUTHOR = 'Awesome Soul'
+NAME = 'ilmulti'
+DESCRIPTION = 'Multilingual Text Tooling around Indian Languages'
+URL = 'https://github.com/jerinphilip/ilmulti'
+EMAIL = 'jerin.philip@research.iiit.ac.in'
+AUTHOR = 'Jerin Philip'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
     # 'requests', 'maya', 'records',
-    'langdetect', 'sentencepiece'
+    'langdetect', 
+    'langid'
+    'sentencepiece'
 ]
 
 # What packages are optional?

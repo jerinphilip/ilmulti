@@ -28,7 +28,7 @@ class ParallelDataset:
 
     def __repr__(self):
         src, tgt = self.exts
-        return ('ParallelDataset(prefix={prefix}, exts=(src, tgt))'
+        return ('ParallelDataset(prefix={prefix}, exts=({src}, {tgt}))'
                 .format(prefix=self.prefix, src=src, tgt=tgt))
 
     def __hash__(self):
