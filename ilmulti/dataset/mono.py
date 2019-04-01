@@ -1,6 +1,6 @@
 import os
 import warnings
-from pf.utils import language_token
+from ilmulti.utils import language_token
 
 class MonolingualDataset:
     def __init__(self, path, lang):

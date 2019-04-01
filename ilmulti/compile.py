@@ -1,11 +1,11 @@
 
-from pf.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
-from pf.dataset import AgnosticTokenizedDataset
-from pf.filters import PairDetect
-from pf.sentencepiece import SentencePieceTokenizer
+from ilmulti.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
+from ilmulti.dataset import AgnosticTokenizedDataset
+from ilmulti.filters import PairDetect
+from ilmulti.sentencepiece import SentencePieceTokenizer
 import os
-from pf.dataset import ParallelWriter
-from pf.dataset import FakeParallelDataset
+from ilmulti.dataset import ParallelWriter
+from ilmulti.dataset import FakeParallelDataset
 from tqdm import tqdm
 
 # Create tokenizer

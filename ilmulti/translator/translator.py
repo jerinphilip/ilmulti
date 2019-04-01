@@ -121,9 +121,9 @@ if __name__ ==  '__main__':
     args.enhance(print_alignment=True)
     args.enhance(**kw)
     # print(args)
-    tokenizer = pf.sentencepiece.SentencePieceTokenizer()
+    tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
     translator = FairseqTranslator(args)
-    segmenter = pf.segment.Segmenter()
+    segmenter = ilmulti.segment.Segmenter()
     engine = MTEngine(translator, segmenter, tokenizer)
     translations = engine('hello world', tgt_lang='hi')
     from pprint import pprint

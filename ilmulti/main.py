@@ -1,10 +1,10 @@
-from pf.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
-from pf.filters import PairDetect
+from ilmulti.dataset import MonolingualDataset, ParallelDataset, MultilingualDataset
+from ilmulti.filters import PairDetect
 from tqdm import tqdm
 import sys
 import yaml
 import os
-from pf.dataset import ParallelWriter
+from ilmulti.dataset import ParallelWriter
 
 
 config_path = sys.argv[1]

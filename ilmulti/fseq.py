@@ -1,6 +1,6 @@
 import sys
-from pf.dataset import FairseqOutput
-from pf.dataset import ParallelWriter
+from ilmulti.dataset import FairseqOutput
+from ilmulti.dataset import ParallelWriter
 from tqdm import tqdm
 
 path = sys.argv[1]

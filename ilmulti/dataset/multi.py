@@ -1,5 +1,5 @@
 from collections import deque
-from pf.utils import canonicalize
+from ilmulti.utils import canonicalize
 
 class MultilingualDataset:
     def __init__(self, psets):

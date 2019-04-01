@@ -13,7 +13,7 @@ class MTEngine:
             lang, tokens = self.tokenizer(line)
             src_lang = src_lang or lang
             # Unsupervised tokenization.
-            tokens = [pf.utils.language_token(tgt_lang)] + tokens
+            tokens = [ilmulti.utils.language_token(tgt_lang)] + tokens
             content = ' '.join(tokens)
             sources.append(content)
 

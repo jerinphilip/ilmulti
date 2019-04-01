@@ -1,7 +1,7 @@
 import os
-from pf.datasets.torch.fairseq_lp_adapter import LPAdapter
-from pf.datasets import ParallelDataset
-from pf.sentencepiece import SentencePieceTokenizer
+from ilmulti.datasets.torch.fairseq_lp_adapter import LPAdapter
+from ilmulti.datasets import ParallelDataset
+from ilmulti.sentencepiece import SentencePieceTokenizer
 
 def build(root, split, src, tgt):
     tokenizer = SentencePieceTokenizer()

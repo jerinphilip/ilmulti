@@ -1,5 +1,5 @@
 from .bi import ParallelDataset
-from pf.filters import PairDetect
+from ilmulti.filters import PairDetect
 
 class FairseqPrediction:
     def __init__(self, src=None, tgt=None, ppl=None):

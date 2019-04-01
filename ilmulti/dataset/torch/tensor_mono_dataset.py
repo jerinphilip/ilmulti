@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from pf.utils import language_token, canonicalize
+from ilmulti.utils import language_token, canonicalize
 from .utils import id_filter
 from tqdm import tqdm
 

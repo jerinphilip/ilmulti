@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
-from pf.dataset import ParallelDataset
-from pf.sentencepiece import SentencePieceTokenizer
-from pf.dataset.torch import TensorMultiDataset
-from pf.dataset import ParallelWriter
+from ilmulti.dataset import ParallelDataset
+from ilmulti.sentencepiece import SentencePieceTokenizer
+from ilmulti.dataset.torch import TensorMultiDataset
+from ilmulti.dataset import ParallelWriter
 
 parser = ArgumentParser()
 parser.add_argument("--root", type=str, required=True)
