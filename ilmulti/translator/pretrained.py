@@ -7,6 +7,9 @@ import os
 import requests 
 import sys
 
+import fairseq
+import ilmulti
+
 from .args import Args
 from .translator import FairseqTranslator
 from ..segment import SimpleSegmenter
@@ -54,7 +57,7 @@ class mm_all:
         fseq_translator = FairseqTranslator(args)
         segmenter = ilmulti.segment.SimpleSegmenter()
         tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
-        self.engine = MTEngine(fseq_translator, segmenter, tokenizer)
+        self.engine = ilmulti.translator.MTEngine(fseq_translator, segmenter, tokenizer)
 
     def __call__(self, *args, **kwargs):
         return self.engine(*args, **kwargs)

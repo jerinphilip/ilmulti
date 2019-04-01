@@ -4,7 +4,7 @@ import fairseq
 # from fairseq import data, options, tasks, tokenizer, utils
 
 import numpy as np
-import pf
+import ilmulti
 
 Batch = namedtuple('Batch', 'srcs tokens lengths')
 

@@ -25,7 +25,7 @@ REQUIRED = [
     # 'requests', 'maya', 'records',
     'langdetect', 
     'langid',
-    'sentencepiece'
+    'sentencepiece',
 ]
 
 # What packages are optional?

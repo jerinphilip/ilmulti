@@ -1,4 +1,4 @@
-import pf
+import ilmulti
 
 class MTEngine:
     def __init__(self, translator, segmenter, tokenizer):
