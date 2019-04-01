@@ -6,7 +6,7 @@ class BaseSegmenter:
     def __call__(self, content):
         raise NotImplementedError()
 
-    def _detect_lang(self, content)
+    def _detect_lang(self, content):
         _lang, prob = langid.classify(content)
         return _lang, prob
 

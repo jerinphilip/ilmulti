@@ -3,7 +3,7 @@ from langdetect.lang_detect_exception import LangDetectException
 import os
 import sentencepiece as spm
 from warnings import warn
-from pf.utils import language_token
+from ilmulti.utils import language_token
 
 class LazySPM:
     def __init__(self, path, lang, units):
