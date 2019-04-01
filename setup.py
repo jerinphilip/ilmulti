@@ -24,7 +24,7 @@ VERSION = None
 REQUIRED = [
     # 'requests', 'maya', 'records',
     'langdetect', 
-    'langid'
+    'langid',
     'sentencepiece'
 ]
 
