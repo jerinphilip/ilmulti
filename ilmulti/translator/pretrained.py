@@ -4,7 +4,6 @@ This file creates models already trained and available.
 """
 
 import os
-import requests 
 import sys
 
 import fairseq
@@ -14,32 +13,16 @@ from .args import Args
 from .translator import FairseqTranslator
 from ..segment import SimpleSegmenter
 from ..sentencepiece import SentencePieceTokenizer
+from ilmulti.utils import download_resources
 
-ILMULTI_DIR = os.path.join(os.environ['HOME'], '.ilmulti')
-
-def download_resources(url, filename, save_path=ILMULTI_DIR):
-    fpath = os.path.join(save_path, filename)
-    with open(fpath, 'wb') as outfile:
-        response = requests.get(url, stream=True)
-        total = response.headers.get('content-length')
-
-        if total is None:
-            outfile.write(response.content)
-        else:
-            downloaded = 0
-            total = int(total)
-            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
-                downloaded += len(data)
-                outfile.write(data)
-                done = int(50*downloaded/total)
-                sys.stderr.write('\r[{}{}]'.format('█' * done, '.' * (50-done)))
-                sys.stderr.flush()
-    sys.stdout.write('\n')
 
 class mm_all:
-    def __init__(self, root=os.path.join(ILMULTI_DIR, 'mm-all')):
+    def __init__(self, root=os.path.join(ilmulti.utils.ILMULTI_DIR, 'mm-all')):
         model_path = os.path.join(root, 'model.pt')
         # If not model path, wire to download later.
+        if not os.path.exists(model_path):
+            url = "http://preon.iiit.ac.in/~jerin/models/mm-all.tar.gz"
+            download_resources(url, "mm-all.tar.gz")
 
         args = Args(
             path=model_path, max_tokens=1000, task='translation',
