@@ -2,7 +2,16 @@ import re
 import langid
 import warnings
 
-class PatternSegmenter:
+class BaseSegmenter:
+    def __call__(self, content):
+        raise NotImplementedError()
+
+    def _detect_lang(self, content)
+        _lang, prob = langid.classify(content)
+        return _lang, prob
+
+
+class PatternSegmenter(BaseSegmenter):
     def __init__(self, pattern):
         self.pattern = re.compile(pattern)
 
@@ -36,7 +45,7 @@ class Segmenter:
             self._segmenter[lang] = PatternSegmenter(pattern)
 
     def __call__(self, paragraph, lang=None):
-        _lang, prob = langid.classify(paragraph)
+        lang, prob = self._detect_lang(paragraph)
         if lang is None:
             lang = _lang
 
@@ -48,3 +57,13 @@ class Segmenter:
         default = self._segmenter["default"]
         segmenter = self._segmenter.get(lang, default)
         return (_lang, segmenter(paragraph))
+
+class SimpleSegmenter(BaseSegmenter):
+    def __init__(self):
+        pass
+
+    def __call__(self, paragraph):
+        lang, prob = self._detect_lang(paragraph)
+        lines = paragraph.splitlines()
+        return (lang, lines)
+
