@@ -1,7 +1,9 @@
 # ilmulti
 
 This repository houses tooling used to create the models on the leaderboard of
-WAT-Tasks.
+WAT-Tasks. We provide wrappers to models which are trained via 
+[pytorch/fairseq](http://github.com/pytorch/fairseq) to translate. 
+Installation and usage intructions are provided below.
 
 ## Installation
 
