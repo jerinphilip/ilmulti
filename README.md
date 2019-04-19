@@ -12,3 +12,12 @@ python3 setup.py install --user
 
 ```
 
+
+## Usage
+
+```python3
+from ilmulti.translator.pretrained import mm_all
+
+translator = mm_all()
+sample = translator("The most accurate translation of this sentence", tgt_lang='hi')
+```
