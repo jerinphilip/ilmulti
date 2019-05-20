@@ -6,7 +6,7 @@ class MTEngine:
         self.tokenizer = tokenizer
         self.translator = translator
 
-    def __call__(self, source, tgt_lang, src_lang=None):
+    def __call__(self, source, tgt_lang, src_lang=None, detokenize=True):
         lang, lines = self.segmenter(source)
         sources = []
         for line in lines:
@@ -17,4 +17,16 @@ class MTEngine:
             content = ' '.join(tokens)
             sources.append(content)
 
-        return self.translator(sources)
+        export = self.translator(sources)
+        if detokenize:
+            export = self._detokenize(export)
+        return export
+
+    def _detokenize(self, export):
+        _exports = []
+        for entry in export:
+            for key in ['src', 'tgt']:
+                entry[key] = self.tokenizer.detokenize(entry[key])
+            entry['src'] = entry['src'][9:]
+            _exports.append(entry)
+        return _exports

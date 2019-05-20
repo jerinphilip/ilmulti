@@ -45,7 +45,7 @@ class FairseqTranslator:
             diverse_beam_groups=args.diverse_beam_groups, diverse_beam_strength=args.diverse_beam_strength,
         )
 
-    def __call__(self, lines):
+    def __call__(self, lines, attention=False):
         translations = []
         sources = []
         idxs = []
@@ -59,11 +59,11 @@ class FairseqTranslator:
             translations.extend(translations_batch)
             idxs.extend(idx)
 
-        translations = self._postprocess(lines, sources, translations)
+        translations = self._postprocess(lines, sources, translations, attention)
         translations = [x for _, x in sorted(zip(idxs, translations))]
         return translations
 
-    def _postprocess(self, lines, sources, translations):
+    def _postprocess(self, lines, sources, translations, attention):
         align_dict = None
         iterator = zip(lines, sources, translations)
         exports = []
@@ -83,6 +83,11 @@ class FairseqTranslator:
                 'tgt' : hypo_str,
                 'attn' : translation['attention'].tolist(),
             }
+
+            if not attention:
+                export['attn'] = None
+
+
             exports.append(export)
         return exports
 

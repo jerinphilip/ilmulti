@@ -29,7 +29,7 @@ class PatternSegmenter(BaseSegmenter):
             cleaned.append(_cleaned)
         return cleaned
 
-class Segmenter:
+class Segmenter(BaseSegmenter):
     def __init__(self):
         self._segmenter = {}
         patterns = {
@@ -45,7 +45,7 @@ class Segmenter:
             self._segmenter[lang] = PatternSegmenter(pattern)
 
     def __call__(self, paragraph, lang=None):
-        lang, prob = self._detect_lang(paragraph)
+        _lang, prob = self._detect_lang(paragraph)
         if lang is None:
             lang = _lang
 

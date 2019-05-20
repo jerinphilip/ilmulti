@@ -17,24 +17,7 @@ except ImportError:
         from urllib.request import urlopen
         from urllib.parse import urlparse
 
-
-def canonicalize(langcode):
-    _variations = {
-        "ur": ["ur", "ud"],
-        "bn": ["bg", "bn"]
-    }
-
-    inverse = {}
-    for root in _variations:
-        for x in _variations[root]:
-            inverse[x] = root
-
-    return inverse.get(langcode, langcode)
-
-
-def language_token(lang):
-    return '__t2{lang}__'.format(lang=lang)
-
+from . import ILMULTI_DIR
 
 def _download_url_to_file(url, dst, hash_prefix=None, progress=True):
 
@@ -93,7 +76,6 @@ def _download_url_to_file(url, dst, hash_prefix=None, progress=True):
 
 
 
-ILMULTI_DIR = os.path.join(os.environ['HOME'], '.ilmulti')
 
 def download_resources(url, filename, save_path=ILMULTI_DIR):
     if not os.path.exists(ILMULTI_DIR):
@@ -103,3 +85,5 @@ def download_resources(url, filename, save_path=ILMULTI_DIR):
     if tarfile.is_tarfile(fpath):
         shutil.unpack_archive(fpath, ILMULTI_DIR)
         os.remove(fpath)
+
+

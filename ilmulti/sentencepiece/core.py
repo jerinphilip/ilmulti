@@ -1,9 +1,8 @@
-from langdetect import detect_langs
-from langdetect.lang_detect_exception import LangDetectException
 import os
 import sentencepiece as spm
 from warnings import warn
-from ilmulti.utils import language_token
+from ilmulti.utils import language_token, detect_lang
+from collections import Counter
 
 class LazySPM:
     def __init__(self, path, lang, units):
@@ -58,14 +57,18 @@ class SentencePieceTokenizer:
 
     def __call__(self, text, lang=None):
         if lang is None:
-            try:
-                best = detect_langs(text)[0]
-                lang = best.lang
-            except LangDetectException:
-                lang = 'en'
+            export = detect_lang(text, 'segmented')
+            tokens, langs = [], []
+            for segment, lang in export:
+                tokenizer = self.get_tokenizer(lang)
+                segment_tokens = tokenizer(segment)
+                tokens.extend(segment_tokens)
+                langs.append(lang)
+
+            lang, *_ = Counter(langs).most_common(1)
+            return (lang, tokens)
 
         tokenizer = self.get_tokenizer(lang)
-        # text = ' '.join(tokenizer(text))
         tokens = tokenizer(text)
         return (lang, tokens)
 
