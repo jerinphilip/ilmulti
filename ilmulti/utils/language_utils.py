@@ -19,10 +19,12 @@ def canonicalize(langcode):
 def language_token(lang):
     return '__t2{lang}__'.format(lang=lang)
 
+def strip_language_token(sample):
+    language_token, *rest = sample.split()
+    return ' '.join(rest)
 
-langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en'])
 
-
+langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te'])
 
 def detect_lang(text_sequence, _type="whole"):
     def  _detect_segmented(text_sequence):
