@@ -8,8 +8,17 @@ def _f(sub_path):
     return path
 
 
+DATASET_REGISTRY = {}
+def dataset_register(tag, splits):
+    def __inner(f):
+        DATASET_REGISTRY[tag] = (splits, f)
+        return f
+    return __inner
+
+
 Corpus = namedtuple('Corpus', 'tag path lang')
 
+@dataset_register('iitb-hi-en', ['train', 'dev', 'test'])
 def IITB_meta(split):
     corpora = []
     for lang in ['en', 'hi']:
@@ -18,10 +27,8 @@ def IITB_meta(split):
         corpora.append(corpus)
     return corpora
 
-IITB_train = IITB_meta('train')
-IITB_dev = IITB_meta('dev')
-IITB_test = IITB_meta('test')
 
+@dataset_register('wat-ilmpc', ['train', 'dev', 'split'])
 def WAT_meta(split):
     corpora = []
     langs = ['bn', 'hi', 'ml', 'si', 'ta', 'te', 'ur']
@@ -35,17 +42,19 @@ def WAT_meta(split):
             corpora.append(corpus)
     return corpora
 
-WAT_train = WAT_meta('train')
-WAT_dev = WAT_meta('dev')
-WAT_test = WAT_meta('test')
-
+@dataset_register('ufal-en-tam', ['train', 'dev', 'split'])
+def UFALEnTam_meta(split):
+    corpora = []
+    for lang in ['en', 'ta']:
+        sub_path = 'ufal-en-tam/{}.{}'.format(split, lang)
+        corpus = Corpus('ufal-en-tam', _f(sub_path), lang)
+        corpora.append(corpus)
+    return corpora
 
 
 def sanity_check(collection):
     for corpus in collection:
         print(corpus)
-
-
 
 if __name__ == '__main__':
     def merge(*_as):
@@ -54,14 +63,12 @@ if __name__ == '__main__':
             _ase.extend(a)
         return _ase
 
-    _all = merge(
-        WAT_train,
-        WAT_dev,
-        WAT_test,
-        IITB_train,
-        IITB_dev,
-        IITB_test,
-    )
+    ls = []
+    for key in DATASET_REGISTRY:
+        splits, f = DATASET_REGISTRY[key]
+        for split in splits:
+            ls.append(f(split))
 
+    _all = merge(*ls)
     sanity_check(_all)
 
