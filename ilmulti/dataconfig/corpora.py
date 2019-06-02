@@ -12,7 +12,7 @@ def IITB_meta(split):
     return corpora
 
 
-@dataset_register('wat-ilmpc', ['train', 'dev', 'split'])
+@dataset_register('wat-ilmpc', ['train', 'dev', 'test'])
 def WAT_meta(split):
     corpora = []
     langs = ['bn', 'hi', 'ml', 'si', 'ta', 'te', 'ur']
@@ -26,7 +26,7 @@ def WAT_meta(split):
             corpora.append(corpus)
     return corpora
 
-@dataset_register('ufal-en-tam', ['train', 'dev', 'split'])
+@dataset_register('ufal-en-tam', ['train', 'dev', 'test'])
 def UFALEnTam_meta(split):
     corpora = []
     for lang in ['en', 'ta']:

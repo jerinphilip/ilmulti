@@ -1,6 +1,5 @@
 import os
 from collections import namedtuple
-import pandas as pd
 
 DATASET_REGISTRY = {}
 def dataset_register(tag, splits):
@@ -20,5 +19,4 @@ def sanity_check(collection):
         print(corpus)
 
 from . import corpora
-
 
