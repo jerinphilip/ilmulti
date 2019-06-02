@@ -1,23 +1,30 @@
 from collections import defaultdict
 from itertools import combinations
+from . import DATASET_REGISTRY
 
-def compile(registry, split, langs):
+def select(tags, splits, langs):
     """
     """
-
     # Filter by split, langs
+    registry = dict([
+            (k, v)  \
+            for k, v in DATASET_REGISTRY.items() \
+            if k in tags
+    ])
+
     filtered_corpora = []
     for key in registry:
         _splits, f = registry[key]
-        for _split in _splits:
-            if _split == split:
-                corpora = f(_split)
-                corpora = [
-                    c for c in corpora \
-                    if c.lang in langs
-                ]
+        isplits = set(_splits).intersection(set(splits))
+        isplits = list(isplits)
+        for _split in isplits:
+            corpora = f(_split)
+            corpora = [
+                c for c in corpora \
+                if c.lang in langs
+            ]
 
-                filtered_corpora.extend(corpora)
+            filtered_corpora.extend(corpora)
 
 
     def group_by_tag(corpora):
@@ -37,8 +44,10 @@ def compile(registry, split, langs):
 
 
 if __name__ == '__main__':
-    from . import DATASET_REGISTRY
-    pairs = compile(DATASET_REGISTRY, 'train', ['en', 'hi', 'ml', 'ta'])
+    tags = ['iitb-hi-en', 'wat-ilmpc']
+    splits = ['train']
+    langs = ['en', 'hi', 'ta', 'ml']
+    pairs = select(tags, splits, langs)
     from pprint import pprint
     pprint(pairs)
 
