@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+import pandas as pd
 
 DATASET_REGISTRY = {}
 def dataset_register(tag, splits):
@@ -17,3 +18,7 @@ Corpus = namedtuple('Corpus', 'tag path lang')
 def sanity_check(collection):
     for corpus in collection:
         print(corpus)
+
+from . import corpora
+
+
