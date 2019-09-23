@@ -76,6 +76,8 @@ class SentencePieceTokenizer:
         SPM_SYMBOL = '▁'
         value = value.replace(' ', '')
         value = value.replace(SPM_SYMBOL, ' ')
+        if not value:
+            return ''
         if value[0] == ' ':
             value = value[1:]
         return value
