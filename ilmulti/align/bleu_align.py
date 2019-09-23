@@ -1,5 +1,6 @@
 from io import StringIO
 from bleualign.align import Aligner
+from ilmulti.utils.language_utils import language_token
 
 
 class BLEUAligner:
@@ -17,7 +18,7 @@ class BLEUAligner:
 
         # Shared code to create file objects to adapt with BLEUAlign
         def create_stringio(lines, lang):
-            tokenized = [ self.tokenizer(line, lang=lang)[1] \
+            tokenized = [ ' '.join(self.tokenizer(line, lang=lang)[1]) \
                     for line in lines ]
             lstring = '\n'.join(tokenized)
             return tokenized, StringIO(lstring)
@@ -27,14 +28,23 @@ class BLEUAligner:
             tokenized, _io = create_stringio(segments, lang)
             return tokenized, _io
 
-        src_tokenized, src_io = process(srcs, src_lang)
-        tgt_tokenized, tgt_io = process(tgts, tgt_lang)
+        src_tokenized, src_io = process(src, src_lang)
+        tgt_tokenized, tgt_io = process(tgt, tgt_lang)
+
+        # Inject tokens into src_tokenized
+        injected_src_tokenized = [
+            '{} {}'.format(language_token(tgt_lang), src_tokenized_line)
+            for src_tokenized_line in src_tokenized
+        ]
 
         # Processing using src_tokenized to get translations
         # TODO(shashank) accumulate list
-        generation_output = self.model(src_tokenized, tgt_lang=tgt_lang)
+        generation_output = self.model(injected_src_tokenized)
+
         # [0]['tgt']
-        hyps = [ gout['tgt'][0] for gout in generation_output ]
+        # for gout in generation_output:
+        #     print(gout)
+        hyps = [ gout['tgt'] for gout in generation_output ]
         hyp_tokenized, hyp_io = create_stringio(hyps, tgt_lang)
         return self.bleu_align(src_io, tgt_io, hyp_io)
 
@@ -47,12 +57,12 @@ class BLEUAligner:
             'targetfile': tgtfile,
             'srctotarget': [hyp_src_tgt_file],
             'targettosrc': [],
-            'output': output,
+            # 'output': output,
             # 'output-src': src_out, 'output-target': tgt_out,
 	}
         a = Aligner(options)
         a.mainloop()
         src_out, tgt_out = a.results()
-        srcs = src_out.read().splitlines()
-        tgts = tgt_out.read().splitlines()
+        srcs = src_out.getvalue().splitlines()
+        tgts = tgt_out.getvalue().splitlines()
         return srcs, tgts
