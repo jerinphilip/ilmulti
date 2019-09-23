@@ -15,8 +15,7 @@ class PatternSegmenter(BaseSegmenter):
     def __init__(self, pattern):
         self.pattern = re.compile(pattern)
 
-    def __call__(self, paragraph):
-        "returns segments"
+    def paragraph_segment(self, paragraph):  
         paragraph = re.sub(r'[.]+', '.', paragraph)
         segments = self.pattern.split(paragraph)
         cleaned = []
@@ -28,6 +27,16 @@ class PatternSegmenter(BaseSegmenter):
             _cleaned = _cleaned.lstrip().rstrip()
             cleaned.append(_cleaned)
         return cleaned
+
+    def __call__(self, paragraph):
+        "returns segments"
+        paragraphs = paragraph.splitlines()
+        cleaned = []
+        for paragraph in paragraphs:
+            _cleaned = self.paragraph_segment(paragraph)
+            cleaned.extend(_cleaned)
+        return cleaned
+
 
 class Segmenter(BaseSegmenter):
     def __init__(self):
