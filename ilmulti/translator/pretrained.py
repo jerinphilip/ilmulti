@@ -44,3 +44,7 @@ class mm_all:
 
     def __call__(self, *args, **kwargs):
         return self.engine(*args, **kwargs)
+
+    def get_translator(self):
+        return self.engine.translator
+
