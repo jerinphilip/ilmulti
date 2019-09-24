@@ -67,4 +67,10 @@ def detect_lang(text_sequence, _type="whole"):
 
     return switch.get(_type, "whole")(text_sequence)
 
+def inject_token(src_tokenized,tgt_lang):
+    injected_src_tokenized = [
+        '{} {}'.format(language_token(tgt_lang), src_tokenized_line)
+        for src_tokenized_line in src_tokenized
+    ]
 
+    return injected_src_tokenized

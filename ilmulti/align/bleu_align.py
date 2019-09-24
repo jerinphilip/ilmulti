@@ -1,7 +1,6 @@
 from io import StringIO
 from bleualign.align import Aligner
-from ilmulti.utils.language_utils import language_token
-
+from ilmulti.utils.language_utils import inject_token
 
 class BLEUAligner:
     def __init__(self, model, tokenizer, segmenter):
@@ -10,12 +9,19 @@ class BLEUAligner:
         self.segmenter = segmenter
 
     def __call__(self, src, src_lang, tgt, tgt_lang):
+
+
+
         """
             Input: Paragraphs in two languages and their language codes.
             Output: Obtained parallel sentences using BLEUAlign
 
         """
+        hyps = self.get_hypothesis(src, src_lang, tgt, tgt_lang)
+        hyp_tokenized, hyp_io = create_stringio(hyps, tgt_lang)
+        return self.bleu_align(src_io, tgt_io, hyp_io)
 
+    def get_hypothesis(self, src, src_lang, tgt, tgt_lang):
         # Shared code to create file objects to adapt with BLEUAlign
         def create_stringio(lines, lang):
             tokenized = [ ' '.join(self.tokenizer(line, lang=lang)[1]) \
@@ -32,10 +38,7 @@ class BLEUAligner:
         tgt_tokenized, tgt_io = process(tgt, tgt_lang)
 
         # Inject tokens into src_tokenized
-        injected_src_tokenized = [
-            '{} {}'.format(language_token(tgt_lang), src_tokenized_line)
-            for src_tokenized_line in src_tokenized
-        ]
+        injected_src_tokenized = inject_token(src_tokenized,tgt_lang)
 
         # Processing using src_tokenized to get translations
         # TODO(shashank) accumulate list
@@ -45,8 +48,7 @@ class BLEUAligner:
         # for gout in generation_output:
         #     print(gout)
         hyps = [ gout['tgt'] for gout in generation_output ]
-        hyp_tokenized, hyp_io = create_stringio(hyps, tgt_lang)
-        return self.bleu_align(src_io, tgt_io, hyp_io)
+        return hyps
 
 
     def bleu_align(self, srcfile, tgtfile, hyp_src_tgt_file):

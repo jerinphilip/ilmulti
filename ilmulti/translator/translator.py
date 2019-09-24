@@ -12,11 +12,11 @@ class TranslatorBase:
     pass
 
 class FairseqTranslator:
-    def __init__(self, args):
+    def __init__(self, args, use_cuda=False):
         # In here, we wrap around facebook's translator.
         self.args = args
         self.task = fairseq.tasks.setup_task(args)
-
+        self.use_cuda = use_cuda
         # print('| loading model(s) from {}'.format(args.path))
         model_paths = args.path.split(':')
         models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
@@ -44,13 +44,23 @@ class FairseqTranslator:
             sampling=args.sampling, sampling_topk=args.sampling_topk, sampling_temperature=args.sampling_temperature,
             diverse_beam_groups=args.diverse_beam_groups, diverse_beam_strength=args.diverse_beam_strength,
         )
+        if self.use_cuda:
+            self.translator.cuda()
 
     def __call__(self, lines, attention=False):
         translations = []
         sources = []
         idxs = []
         for batch, idx in self._make_batches(lines):
-            encoder_input = {'src_tokens': batch.tokens, 'src_lengths': batch.lengths}
+            if self.use_cuda:
+                src_tokens = batch.tokens.cuda()
+                src_lengths = batch.tokens.cuda()
+
+            else:
+                src_tokens = batch.tokens
+                src_lengths = batch.tokens
+
+            encoder_input = {'src_tokens': src_tokens, 'src_lengths': src_lengths}
             translations_batch = self.translator.generate(
                 encoder_input,
                 maxlen=int(self.args.max_len_a * batch.tokens.size(1) + self.args.max_len_b),
@@ -112,6 +122,9 @@ class FairseqTranslator:
                 lengths=batch['net_input']['src_lengths'],
             ), batch['id']
 
+    def cuda(self):
+        self.translator.cuda()
+        self.use_cuda = True
 
 
 
