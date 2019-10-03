@@ -50,9 +50,9 @@ class SentencePieceTokenizer:
         from itertools import chain
         files = os.listdir(self.model_path)
         model_files = filter(lambda f: ".model" in f, files)
-        model_files = filter(lambda f: "{}".format(self.units[0]) in f, files)
-        models = filter(lambda f: "{}".format(self.units[1]) in f, files)
-        model_files = chain(model_files,models)
+        model_files_2k = filter(lambda f: "{}".format(self.units[0]) in f, files)
+        model_files_4k = filter(lambda f: "{}".format(self.units[1]) in f, files)
+        model_files = chain(model_files_2k,model_files_4k)
         for model_file in model_files:
             lang, units, ext = model_file.split('.')
             units = int(units)
