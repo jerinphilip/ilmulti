@@ -36,7 +36,7 @@ class LazySPM:
         return tokens
 
 class SentencePieceTokenizer:
-    def __init__(self, model_path=None, units=[2000,4000]):
+    def __init__(self, model_path=None, units=4000):
         if model_path is None:
             cdir = os.path.abspath(os.path.dirname(__file__))
             model_path = os.path.join(cdir, 'models')
@@ -50,13 +50,9 @@ class SentencePieceTokenizer:
         from itertools import chain
         files = os.listdir(self.model_path)
         model_files = filter(lambda f: ".model" in f, files)
-        model_files_2k = filter(lambda f: "{}".format(self.units[0]) in f, files)
-        model_files_4k = filter(lambda f: "{}".format(self.units[1]) in f, files)
-        model_files = chain(model_files_2k,model_files_4k)
         for model_file in model_files:
             lang, units, ext = model_file.split('.')
             units = int(units)
-            print(lang, units, ext)
             self.tokenizer[(lang, units)] = LazySPM(self.model_path, lang, units)
 
     def __call__(self, text, lang=None):
@@ -113,10 +109,6 @@ class SentencePieceTokenizer:
         return dictionary
 
     def get_tokenizer(self, lang):
-        if lang in ['gu','or','mr','pa']: #2K vocab switch
-            self.units = self.units[0]
-        else:
-            self.units = self.units[1]   
         default = self.tokenizer[("en", self.units)]
         return self.tokenizer.get((lang, self.units), default)
 
