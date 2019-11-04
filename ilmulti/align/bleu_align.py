@@ -8,21 +8,13 @@ class BLEUAligner:
         self.tokenizer = tokenizer
         self.segmenter = segmenter
 
+
     def __call__(self, src, src_lang, tgt, tgt_lang):
-
-
-
         """
             Input: Paragraphs in two languages and their language codes.
             Output: Obtained parallel sentences using BLEUAlign
 
         """
-        hyps = self.get_hypothesis(src, src_lang, tgt, tgt_lang)
-        hyp_tokenized, hyp_io = create_stringio(hyps, tgt_lang)
-        return self.bleu_align(src_io, tgt_io, hyp_io)
-
-    def get_hypothesis(self, src, src_lang, tgt, tgt_lang):
-        # Shared code to create file objects to adapt with BLEUAlign
         def create_stringio(lines, lang):
             tokenized = [ ' '.join(self.tokenizer(line, lang=lang)[1]) \
                     for line in lines ]
@@ -44,12 +36,13 @@ class BLEUAligner:
         # TODO(shashank) accumulate list
         generation_output = self.model(injected_src_tokenized)
 
-        # [0]['tgt']
-        # for gout in generation_output:
-        #     print(gout)
         hyps = [ gout['tgt'] for gout in generation_output ]
-        return hyps
 
+        #hyp_tokenized, hyp_io = create_stringio(hyps, tgt_lang)
+        hyps = '\n'.join(hyps)
+        hyp_io = StringIO(hyps)
+
+        return self.bleu_align(src_io, tgt_io, hyp_io)
 
     def bleu_align(self, srcfile, tgtfile, hyp_src_tgt_file):
         output = StringIO()
