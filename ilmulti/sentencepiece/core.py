@@ -47,9 +47,9 @@ class SentencePieceTokenizer:
         self.load_models()
 
     def load_models(self):
+        from itertools import chain
         files = os.listdir(self.model_path)
         model_files = filter(lambda f: ".model" in f, files)
-        model_files = filter(lambda f: "{}".format(self.units) in f, files)
         for model_file in model_files:
             lang, units, ext = model_file.split('.')
             units = int(units)
@@ -114,6 +114,6 @@ class SentencePieceTokenizer:
 
 if __name__ == '__main__':
     sp = SentencePieceTokenizer()
-    s = sp("Hello World")
+    s = sp("Hello world!",lang='en')
     print(sp.dictionary())
     print(s)

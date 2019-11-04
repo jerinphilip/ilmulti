@@ -5,7 +5,9 @@ import warnings
 def canonicalize(langcode):
     _variations = {
         "ur": ["ur", "ud"],
-        "bn": ["bg", "bn"]
+        "bn": ["bg", "bn"],
+        "gu": ["gu", "gj"],
+        "pa": ["pa", "pj"]
     }
 
     inverse = {}
@@ -24,7 +26,7 @@ def strip_language_token(sample):
     return ' '.join(rest)
 
 
-langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te'])
+langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te', 'gu', 'pa', 'mr', 'or'])
 
 def detect_lang(text_sequence, _type="whole"):
     def  _detect_segmented(text_sequence):
