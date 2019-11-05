@@ -69,16 +69,17 @@ class FairseqTranslator:
             translations.extend(translations_batch)
             idxs.extend(idx)
 
-        translations = self._postprocess(lines, sources, translations, attention)
+        translations = self._postprocess(idxs, lines, sources, translations, attention)
         translations = [x for _, x in sorted(zip(idxs, translations))]
         return translations
 
-    def _postprocess(self, lines, sources, translations, attention):
+    def _postprocess(self, idxs, lines, sources, translations, attention):
         align_dict = None
-        iterator = zip(lines, sources, translations)
+        iterator = zip(idxs, lines, sources, translations)
         exports = []
         for idx, itr in enumerate(iterator):
-            line, source, _translations = itr
+            idy, line, source, _translations = itr
+            idy = idy.item()
             translation = _translations[0]
             hypo_tokens, hypo_str, alignment = fairseq.utils.post_process_prediction(
                 hypo_tokens=translation['tokens'].int().cpu(),
@@ -90,13 +91,13 @@ class FairseqTranslator:
             )
             export = {
                 'src' : line,
+                'id'  : idy,
                 'tgt' : hypo_str,
                 'attn' : translation['attention'].tolist(),
             }
 
             if not attention:
                 export['attn'] = None
-
 
             exports.append(export)
         return exports
