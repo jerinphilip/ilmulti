@@ -27,7 +27,7 @@ class mm_all:
         args = Args(
             path=model_path, max_tokens=1000, task='translation',
             source_lang='src', target_lang='tgt', buffer_size=2,
-            data=[root]
+            data=root
         )
 
         parser = fairseq.options.get_generation_parser(interactive=True)

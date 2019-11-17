@@ -19,12 +19,12 @@ class FairseqTranslator:
         self.use_cuda = use_cuda
         # print('| loading model(s) from {}'.format(args.path))
         model_paths = args.path.split(':')
-        models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
+        self.models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
         self.tgt_dict = self.task.target_dictionary
 
         # Optimize ensemble for generation
         # print(args.print_alignment)
-        for model in models:
+        for model in self.models:
             model.make_generation_fast_(
                 beamable_mm_beam_size=None if args.no_beamable_mm else args.beam,
                 need_attn=args.print_alignment,
@@ -34,16 +34,17 @@ class FairseqTranslator:
 
         self.max_positions = fairseq.utils.resolve_max_positions(
             self.task.max_positions(),
-            *[model.max_positions() for model in models]
+            *[model.max_positions() for model in self.models]
         )
-
-        self.translator = SequenceGenerator(
-            models, self.tgt_dict, beam_size=args.beam, minlen=args.min_len,
-            stop_early=(not args.no_early_stop), normalize_scores=(not args.unnormalized),
-            len_penalty=args.lenpen, unk_penalty=args.unkpen,
-            sampling=args.sampling, sampling_topk=args.sampling_topk, sampling_temperature=args.sampling_temperature,
-            diverse_beam_groups=args.diverse_beam_groups, diverse_beam_strength=args.diverse_beam_strength,
-        )
+        # self.translator = SequenceGenerator(
+        #     # models,  No longer reliant on the model.
+        #     self.tgt_dict, beam_size=args.beam, minlen=args.min_len,
+        #     stop_early=(not args.no_early_stop), normalize_scores=(not args.unnormalized),
+        #     len_penalty=args.lenpen, unk_penalty=args.unkpen,
+        #     sampling=args.sampling, sampling_topk=args.sampling_topk, sampling_temperature=args.sampling_temperature,
+        #     diverse_beam_groups=args.diverse_beam_groups, diverse_beam_strength=args.diverse_beam_strength,
+        # )
+        self.translator = self.task.build_generator(args)
         if self.use_cuda:
             self.translator.cuda()
 
@@ -62,6 +63,7 @@ class FairseqTranslator:
 
             encoder_input = {'src_tokens': src_tokens, 'src_lengths': src_lengths}
             translations_batch = self.translator.generate(
+                self.models,
                 encoder_input,
                 maxlen=int(self.args.max_len_a * batch.tokens.size(1) + self.args.max_len_b),
             )
