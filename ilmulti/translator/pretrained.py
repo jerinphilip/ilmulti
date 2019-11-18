@@ -37,6 +37,7 @@ class mm_all:
         kw = dict(default_args._get_kwargs())
         args.enhance(print_alignment=True)
         args.enhance(**kw)
+        args.data = 'dummy'
         fseq_translator = FairseqTranslator(args)
         segmenter = ilmulti.segment.SimpleSegmenter()
         tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
