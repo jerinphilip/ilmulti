@@ -37,6 +37,10 @@ class LazySPM:
 class SentencePieceTokenizer:
     def __init__(self, config):
         self.tokenizer = {}
+
+        cdir = os.path.abspath(os.path.dirname(__file__))   
+        self.model_path = os.path.join(cdir, 'models')   
+
         for lang, units in config.items():
             self.tokenizer[lang] = LazySPM(self.model_path, lang, units)
 
@@ -63,8 +67,8 @@ class SentencePieceTokenizer:
         vocab = set()
 
         # Control tokens
-        lang_token = language_token(tgt_lang)
-        vocab.add(language_token)
+        tgt_lang_token = language_token(tgt_lang)
+        vocab.add(tgt_lang_token)
 
         tokenizer_vocab = self.tokenizer[src_lang].vocab
         vocab = vocab.union(tokenizer_vocab)
@@ -100,7 +104,7 @@ class SentencePieceTokenizer:
 
     def get_tokenizer(self, lang):
         if lang not in self.tokenizer:
-            raise KeyError("{} not enabled with a tokenizer of unit - {}".format(lang, self.units
+            raise KeyError("{} not enabled with a tokenizer of unit - {}".format(lang, self.units))
         return self.tokenizer.get(lang)
 
     def detokenize(self, value):
