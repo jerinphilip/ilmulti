@@ -29,31 +29,16 @@ class LazySPM:
 
     def __call__(self, text):
         tokens = self.model.EncodeAsPieces(text)
-        # Clean unwanted tokens
         clean = lambda x: x in self.vocab
-        # print(self.lang, self.units, tokens)
         tokens = list(filter(clean, tokens))
         return tokens
 
+
 class SentencePieceTokenizer:
-    def __init__(self, model_path=None, units=4000):
-        if model_path is None:
-            cdir = os.path.abspath(os.path.dirname(__file__))
-            model_path = os.path.join(cdir, 'models')
-
-        self.model_path = model_path
+    def __init__(self, config):
         self.tokenizer = {}
-        self.units = units
-        self.load_models()
-
-    def load_models(self):
-        from itertools import chain
-        files = os.listdir(self.model_path)
-        model_files = filter(lambda f: ".model" in f, files)
-        for model_file in model_files:
-            lang, units, ext = model_file.split('.')
-            units = int(units)
-            self.tokenizer[(lang, units)] = LazySPM(self.model_path, lang, units)
+        for lang, units in config.items():
+            self.tokenizer[lang] = LazySPM(self.model_path, lang, units)
 
     def __call__(self, text, lang=None):
         if lang is None:
@@ -72,15 +57,23 @@ class SentencePieceTokenizer:
         tokens = tokenizer(text)
         return (lang, tokens)
 
-    def detokenize(self, value):
-        SPM_SYMBOL = '▁'
-        value = value.replace(' ', '')
-        value = value.replace(SPM_SYMBOL, ' ')
-        if not value:
-            return ''
-        if value[0] == ' ':
-            value = value[1:]
-        return value
+    def single_dictionary(self, src_lang, tgt_lang):
+        from fairseq.data.dictionary import Dictionary
+        dictionary = Dictionary()
+        vocab = set()
+
+        # Control tokens
+        lang_token = language_token(tgt_lang)
+        vocab.add(language_token)
+
+        tokenizer_vocab = self.tokenizer[src_lang].vocab
+        vocab = vocab.union(tokenizer_vocab)
+        vocab = sorted(list(vocab))
+
+        for word in vocab:
+            dictionary.add_symbol(word)
+
+        return dictionary
 
 
     def dictionary(self):
@@ -97,20 +90,29 @@ class SentencePieceTokenizer:
         for key in self.tokenizer:
             tokenizer_vocab = self.tokenizer[key].vocab
             vocab = vocab.union(tokenizer_vocab)
-            # print("Vocab tokens: ", key, len(tokenizer_vocab))
 
         vocab = sorted(list(vocab))
         for word in vocab:
             dictionary.add_symbol(word)
 
-        # print("Vocab tokens:", len(vocab))
-        # print("Non-control:", len(vocab) - len(langs))
 
         return dictionary
 
     def get_tokenizer(self, lang):
-        default = self.tokenizer[("en", self.units)]
-        return self.tokenizer.get((lang, self.units), default)
+        if lang not in self.tokenizer:
+            raise KeyError("{} not enabled with a tokenizer of unit - {}".format(lang, self.units
+        return self.tokenizer.get(lang)
+
+    def detokenize(self, value):
+        SPM_SYMBOL = '▁'
+        value = value.replace(' ', '')
+        value = value.replace(SPM_SYMBOL, ' ')
+        if not value:
+            return ''
+        if value[0] == ' ':
+            value = value[1:]
+        return value
+
 
 if __name__ == '__main__':
     sp = SentencePieceTokenizer()
