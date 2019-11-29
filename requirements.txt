@@ -1,5 +1,3 @@
 langdetect
 langid
 sentencepiece
-git+https://github.com/pytorch/fairseq.git@v0.6.0
-

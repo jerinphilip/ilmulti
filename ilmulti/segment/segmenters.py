@@ -43,7 +43,7 @@ class Segmenter(BaseSegmenter):
         self._segmenter = {}
         patterns = {
             "en": "([.;!?…])",
-            "ur": "([۔;!?…])",
+            "ur": "([.;!?…])",
             "hi": "([।;!?…|I])",
             "bn": "([।;!?…|I])",
             "or": "([।;!?…|I])",
