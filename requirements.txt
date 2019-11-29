@@ -1,3 +1,4 @@
 langdetect
 langid
 sentencepiece
+Urduhack
