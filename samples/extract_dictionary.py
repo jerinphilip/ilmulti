@@ -19,6 +19,7 @@ if __name__ == '__main__':
     tokenizer = build_tokenizer(args.tag)
     if args.single:
         dictionary = tokenizer.single_dictionary(args.src, args.tgt)
+        print(len(dictionary))
         dictionary.save(args.outfile)
     else:
         dictionary = tokenizer.dictionary()
