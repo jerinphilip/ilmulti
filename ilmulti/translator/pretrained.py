@@ -25,7 +25,7 @@ class mm_all:
             download_resources(url, "mm-all.tar.gz")
 
         args = Args(
-            path=model_path, max_tokens=96000, task='translation',
+            path=model_path, max_tokens=32000, task='translation',
             source_lang='src', target_lang='tgt', buffer_size=2,
             data=root
         )

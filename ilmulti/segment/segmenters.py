@@ -46,8 +46,8 @@ class Segmenter(BaseSegmenter):
             "en": "([.;!?…])",
             "ur": "([.;!?…])",
             "hi": "([।;!?…|I])",
-            "bn": "([।;!?…|I])",
-            "or": "([।;!?…|I])",
+            "bn": "([।.;!?…|I])",
+            "or": "([।.;!?…|I])",
             "default": "([.;!?…])"
 
         }
@@ -67,7 +67,7 @@ class Segmenter(BaseSegmenter):
 
         # Added by Shashank, specific to Urdu as PatternSegmenter fails for Urdu.
         # refer https://github.com/urduhack/urduhack for details.
-        if lang == 'ur':
+        if lang=='ur':
             segments = sentence_tokenizer(paragraph)
             return (_lang, segments) 
         default = self._segmenter["default"]

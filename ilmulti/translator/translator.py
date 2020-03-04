@@ -43,6 +43,7 @@ class FairseqTranslator:
         )
         self.generator = self.task.build_generator(args)
 
+
     def __call__(self, lines, attention=False):
         start_id = 0
         results = []
@@ -69,6 +70,7 @@ class FairseqTranslator:
             for i, (id, hypos) in enumerate(zip(batch.ids.tolist(), translations)):
                 src_tokens_i = utils.strip_pad(src_tokens[i], tgt_dict.pad())
                 results.append((start_id + id, src_tokens_i, hypos))
+
 
         exports = []
         for id, src_tokens, hypos in sorted(results, key=lambda x: x[0]):

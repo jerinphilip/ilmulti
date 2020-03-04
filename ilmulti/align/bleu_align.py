@@ -48,6 +48,7 @@ class BLEUAligner:
         output = StringIO()
         # src_out, tgt_out = StringIO(), StringIO()
         options = {
+            'verbosity': 0,
             'srcfile': srcfile,
             'targetfile': tgtfile,
             'srctotarget': [hyp_src_tgt_file],
@@ -55,6 +56,7 @@ class BLEUAligner:
             # 'output': output,
             # 'output-src': src_out, 'output-target': tgt_out,
 	}
+
         a = Aligner(options)
         a.mainloop()
         src_out, tgt_out = a.results()
