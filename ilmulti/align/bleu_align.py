@@ -8,7 +8,6 @@ class BLEUAligner:
         self.tokenizer = tokenizer
         self.segmenter = segmenter
 
-
     def __call__(self, src, src_lang, tgt, tgt_lang):
         """
             Input: Paragraphs in two languages and their language codes.

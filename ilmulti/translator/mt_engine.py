@@ -7,6 +7,10 @@ class MTEngine:
         self.translator = translator
 
     def __call__(self, source, tgt_lang, src_lang=None, detokenize=True):
+        """
+        Uses segmenter -> tokenizer -> translator and lays out the
+        interaction.
+        """
         lang, lines = self.segmenter(source)
         sources = []
         for line in lines:

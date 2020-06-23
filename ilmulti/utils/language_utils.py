@@ -1,8 +1,10 @@
-import langid
 import warnings
-langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te', 'gu', 'pa', 'mr', 'or'])
 
 def canonicalize(langcode):
+    """
+    This utility function exists to adapt to old naming conventions in
+    certain datasets.
+    """
     _variations = {
         "ur": ["ur", "ud"],
         "bn": ["bg", "bn"],
@@ -27,10 +29,24 @@ def strip_language_token(sample):
 
 
 
+def inject_token(src_tokenized,tgt_lang):
+    injected_src_tokenized = [
+        '{} {}'.format(language_token(tgt_lang), src_tokenized_line)
+        for src_tokenized_line in src_tokenized
+    ]
+
+    return injected_src_tokenized
 
 def detect_lang(text_sequence, _type="whole"):
+    # Only import langid if required.
+    import langid
+    langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te', 'gu', 'pa', 'mr', 'or'])
+
     def  _detect_segmented(text_sequence):
-        # space split first.
+        warnings.warn(
+            "Detect segmented is not recommended."
+            "This might lead to large slowdowns."
+        )
         tokens = text_sequence.split()
         lang_assignments = []
         for token in tokens:
@@ -68,11 +84,3 @@ def detect_lang(text_sequence, _type="whole"):
         warnings.warn("Unknown type {}, defaulting to whole".format(_type))
 
     return switch.get(_type, "whole")(text_sequence)
-
-def inject_token(src_tokenized,tgt_lang):
-    injected_src_tokenized = [
-        '{} {}'.format(language_token(tgt_lang), src_tokenized_line)
-        for src_tokenized_line in src_tokenized
-    ]
-
-    return injected_src_tokenized

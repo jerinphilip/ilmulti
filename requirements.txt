@@ -1,4 +1,7 @@
-langdetect
+# langdetect
 langid
 sentencepiece
 Urduhack
+
+# Optional, tokenizers work without these as well.
+git+https://github.com/pytorch/fairseq@v0.7.2.git

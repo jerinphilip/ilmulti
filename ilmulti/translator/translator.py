@@ -1,18 +1,15 @@
-from fairseq.sequence_generator import SequenceGenerator
 from collections import namedtuple
-import fairseq
-from fairseq import data, options, tasks, tokenizer, utils
-import torch
 
-import numpy as np
-import ilmulti
+# These are heavy dependencies.
+import fairseq
+from fairseq.sequence_generator import SequenceGenerator
+from fairseq import data, options, tasks, tokenizer, utils
+
+from .args import Args
+from ..utils import download_resources
 
 Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
 Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
-
-
-class TranslatorBase:
-    pass
 
 class FairseqTranslator:
     def __init__(self, args, use_cuda=False):
@@ -117,6 +114,8 @@ class FairseqTranslator:
             encode_fn(src_str), add_if_not_exist=False).long()
             for src_str in lines
         ]
+
+        import torch
         lengths = torch.LongTensor([t.numel() for t in tokens])
         itr = task.get_batch_iterator(
             dataset=task.build_dataset_for_inference(tokens, lengths),
@@ -131,53 +130,27 @@ class FairseqTranslator:
             ), batch['id']
 
 
-    def _old_make_batches(self, lines):
-        task = self.task
 
-        # tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
+def build_translator(model, use_cuda):
+    model_path = os.path.join(root, '{}.pt'.format(model))
+    # If not model path, wire to download later.
+    if not os.path.exists(model_path):
+        url = "http://preon.iiit.ac.in/~jerin/models/mm-all.tar.gz"
+        download_resources(url, "mm-all.tar.gz")
 
-        def tokenize(line):
-            return line.split()
-            # lang, tokens = tokenizer(line)
+    args = Args(
+        path=model_path, max_tokens=96000, task='translation',
+        source_lang='src', target_lang='tgt', buffer_size=2,
+        data=root
+    )
 
-
-        tokens = [
-            task.source_dictionary.encode_line(src_str, add_if_not_exist=False).long()
-            # fairseq.tokenizer.tokenize_line().long()
-            for src_str in lines
-        ]
-        lengths = np.array([t.numel() for t in tokens])
-        itr = task.get_batch_iterator(
-            dataset=fairseq.data.LanguagePairDataset(tokens, lengths, task.source_dictionary),
-            max_tokens=self.args.max_tokens,
-            max_sentences=self.args.max_sentences,
-            max_positions=self.max_positions,
-        ).next_epoch_itr(shuffle=False)
-        for batch in itr:
-            yield Batch(
-                srcs=[lines[i] for i in batch['id']],
-                tokens=batch['net_input']['src_tokens'],
-                lengths=batch['net_input']['src_lengths'],
-            ), batch['id']
-
-
-
-
-
-
-
-if __name__ ==  '__main__':
-    from args import multi_args as args
+    import fairseq
     parser = fairseq.options.get_generation_parser(interactive=True)
-    default_args = fairseq.options.parse_args_and_arch(parser)
-    kw = dict(default_args._get_kwargs())
+    default_args = fairseq.options.parse_args_and_arch(parser, input_args=['dummy-data'])
+    keyword_arguments = dict(default_args._get_kwargs())
     args.enhance(print_alignment=True)
-    args.enhance(**kw)
-    # print(args)
-    tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
-    translator = FairseqTranslator(args)
-    segmenter = ilmulti.segment.Segmenter()
-    engine = MTEngine(translator, segmenter, tokenizer)
-    translations = engine('hello world', tgt_lang='hi')
-    from pprint import pprint
-    pprint(translations)
+    args.enhance(**keyword_arguments)
+    fseq_translator = FairseqTranslator(args, use_cuda)
+    return fseq_translator
+
+
