@@ -7,7 +7,7 @@ translate. Installation and usage intructions are provided below.
 
 * **Training**: We use a separate fork of
   [pytorch/fairseq](http://github.com/pytorch/fairseq) at
-  [pytorch/fairseq-ilmt](http://github.com/jerinphiip/fairseq-ilmt) for
+  [jerinphilip/fairseq-ilmt](http://github.com/jerinphilip/fairseq-ilmt) for
   training to optimize for our crappy cluster and to plug and play data
   easily.
 

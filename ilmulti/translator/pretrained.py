@@ -8,7 +8,7 @@ import sys
 
 PRETRAINED_CONFIG = {
     'mm-all': {
-        'model': 'mm-all',
+        'model': 'mm-all/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v0'
         'segmenter': 'simple'
     },

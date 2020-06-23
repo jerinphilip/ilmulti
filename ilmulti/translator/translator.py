@@ -132,11 +132,12 @@ class FairseqTranslator:
 
 
 def build_translator(model, use_cuda):
-    model_path = os.path.join(root, '{}.pt'.format(model))
-    # If not model path, wire to download later.
+    model_path = os.path.join(root, model)
     if not os.path.exists(model_path):
-        url = "http://preon.iiit.ac.in/~jerin/models/mm-all.tar.gz"
-        download_resources(url, "mm-all.tar.gz")
+        raise Exception(
+            "The model does not seem downloaded."
+            "Please use scripts/download-and-setup.sh before running this code."
+        )
 
     args = Args(
         path=model_path, max_tokens=96000, task='translation',
