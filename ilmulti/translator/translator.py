@@ -1,12 +1,15 @@
 from fairseq.sequence_generator import SequenceGenerator
 from collections import namedtuple
 import fairseq
-# from fairseq import data, options, tasks, tokenizer, utils
+from fairseq import data, options, tasks, tokenizer, utils
+import torch
 
 import numpy as np
 import ilmulti
 
-Batch = namedtuple('Batch', 'srcs tokens lengths')
+Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
+Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
+
 
 class TranslatorBase:
     pass
@@ -19,93 +22,128 @@ class FairseqTranslator:
         self.use_cuda = use_cuda
         # print('| loading model(s) from {}'.format(args.path))
         model_paths = args.path.split(':')
-        models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
+        self.models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
         self.tgt_dict = self.task.target_dictionary
 
         # Optimize ensemble for generation
         # print(args.print_alignment)
-        for model in models:
+        for model in self.models:
             model.make_generation_fast_(
                 beamable_mm_beam_size=None if args.no_beamable_mm else args.beam,
                 need_attn=args.print_alignment,
             )
             if args.fp16:
                 model.half()
+            if self.use_cuda:
+                model.cuda()
 
         self.max_positions = fairseq.utils.resolve_max_positions(
             self.task.max_positions(),
-            *[model.max_positions() for model in models]
+            *[model.max_positions() for model in self.models]
         )
+        self.generator = self.task.build_generator(args)
 
-        self.translator = SequenceGenerator(
-            models, self.tgt_dict, beam_size=args.beam, minlen=args.min_len,
-            stop_early=(not args.no_early_stop), normalize_scores=(not args.unnormalized),
-            len_penalty=args.lenpen, unk_penalty=args.unkpen,
-            sampling=args.sampling, sampling_topk=args.sampling_topk, sampling_temperature=args.sampling_temperature,
-            diverse_beam_groups=args.diverse_beam_groups, diverse_beam_strength=args.diverse_beam_strength,
-        )
-        if self.use_cuda:
-            self.translator.cuda()
 
     def __call__(self, lines, attention=False):
-        translations = []
-        sources = []
-        idxs = []
+        start_id = 0
+        results = []
+
+        args = self.args
+        src_dict = self.task.source_dictionary
+        tgt_dict = self.task.target_dictionary
+        align_dict = utils.load_align_dict(args.replace_unk)
+
         for batch, idx in self._make_batches(lines):
+            src_tokens = batch.src_tokens
+            src_lengths = batch.src_lengths
             if self.use_cuda:
-                src_tokens = batch.tokens.cuda()
-                src_lengths = batch.tokens.cuda()
+                src_tokens = src_tokens.cuda()
+                src_lengths = src_lengths.cuda()
 
-            else:
-                src_tokens = batch.tokens
-                src_lengths = batch.tokens
-
-            encoder_input = {'src_tokens': src_tokens, 'src_lengths': src_lengths}
-            translations_batch = self.translator.generate(
-                encoder_input,
-                maxlen=int(self.args.max_len_a * batch.tokens.size(1) + self.args.max_len_b),
-            )
-            sources.extend(batch.tokens)
-            translations.extend(translations_batch)
-            idxs.extend(idx)
-
-        translations = self._postprocess(lines, sources, translations, attention)
-        translations = [x for _, x in sorted(zip(idxs, translations))]
-        return translations
-
-    def _postprocess(self, lines, sources, translations, attention):
-        align_dict = None
-        iterator = zip(lines, sources, translations)
-        exports = []
-        for idx, itr in enumerate(iterator):
-            line, source, _translations = itr
-            translation = _translations[0]
-            hypo_tokens, hypo_str, alignment = fairseq.utils.post_process_prediction(
-                hypo_tokens=translation['tokens'].int().cpu(),
-                src_str=source,
-                alignment=translation['alignment'].int().cpu() if translation['alignment'] is not None else None,
-                align_dict=align_dict,
-                tgt_dict=self.tgt_dict,
-                remove_bpe=self.args.remove_bpe,
-            )
-            export = {
-                'src' : line,
-                'tgt' : hypo_str,
-                'attn' : translation['attention'].tolist(),
+            sample = {
+                'net_input': {
+                    'src_tokens': src_tokens,
+                    'src_lengths': src_lengths,
+                },
             }
+            translations = self.task.inference_step(self.generator, self.models, sample)
+            for i, (id, hypos) in enumerate(zip(batch.ids.tolist(), translations)):
+                src_tokens_i = utils.strip_pad(src_tokens[i], tgt_dict.pad())
+                results.append((start_id + id, src_tokens_i, hypos))
 
-            if not attention:
-                export['attn'] = None
 
+        exports = []
+        for id, src_tokens, hypos in sorted(results, key=lambda x: x[0]):
+            if src_dict is not None:
+                src_str = src_dict.string(src_tokens, args.remove_bpe)
+                # print('S-{}\t{}'.format(id, src_str))
 
-            exports.append(export)
+            # Process top predictions
+            for hypo in hypos[:min(len(hypos), args.nbest)]:
+                hypo_tokens, hypo_str, alignment = utils.post_process_prediction(
+                    hypo_tokens=hypo['tokens'].int().cpu(),
+                    src_str=src_str,
+                    alignment=hypo['alignment'].int().cpu() if hypo['alignment'] is not None else None,
+                    align_dict=align_dict,
+                    tgt_dict=tgt_dict,
+                    remove_bpe=args.remove_bpe,
+                )
+                export = {
+                    'src' : src_str,
+                    'id'  : id,
+                    'tgt' : hypo_str,
+                    # 'attn' : translation['attention'].tolist(),
+                }
+
+                if not attention:
+                    export['attn'] = None
+
+                exports.append(export)
         return exports
 
+
+
+
     def _make_batches(self, lines):
+    # def make_batches(lines, args, task, max_positions, encode_fn):
+        args = self.args
+        task = self.task
+        max_positions = args.max_positions
+
+        encode_fn = lambda x: x
+        
+        tokens = [
+            task.source_dictionary.encode_line(
+            encode_fn(src_str), add_if_not_exist=False).long()
+            for src_str in lines
+        ]
+        lengths = torch.LongTensor([t.numel() for t in tokens])
+        itr = task.get_batch_iterator(
+            dataset=task.build_dataset_for_inference(tokens, lengths),
+            max_tokens=args.max_tokens,
+            max_sentences=args.max_sentences,
+            max_positions=max_positions,
+        ).next_epoch_itr(shuffle=False)
+        for batch in itr:
+            yield Batch(
+                ids=batch['id'],
+                src_tokens=batch['net_input']['src_tokens'], src_lengths=batch['net_input']['src_lengths'],
+            ), batch['id']
+
+
+    def _old_make_batches(self, lines):
         task = self.task
 
+        # tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
+
+        def tokenize(line):
+            return line.split()
+            # lang, tokens = tokenizer(line)
+
+
         tokens = [
-            fairseq.tokenizer.Tokenizer.tokenize(src_str, task.source_dictionary, add_if_not_exist=False).long()
+            task.source_dictionary.encode_line(src_str, add_if_not_exist=False).long()
+            # fairseq.tokenizer.tokenize_line().long()
             for src_str in lines
         ]
         lengths = np.array([t.numel() for t in tokens])
@@ -122,9 +160,6 @@ class FairseqTranslator:
                 lengths=batch['net_input']['src_lengths'],
             ), batch['id']
 
-    def cuda(self):
-        self.translator.cuda()
-        self.use_cuda = True
 
 
 

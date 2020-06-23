@@ -1,6 +1,6 @@
 import langid
 import warnings
-
+langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te', 'gu', 'pa', 'mr', 'or'])
 
 def canonicalize(langcode):
     _variations = {
@@ -26,7 +26,7 @@ def strip_language_token(sample):
     return ' '.join(rest)
 
 
-langid.set_languages(['ml','ta','bn', 'ur', 'hi', 'en', 'te', 'gu', 'pa', 'mr', 'or'])
+
 
 def detect_lang(text_sequence, _type="whole"):
     def  _detect_segmented(text_sequence):

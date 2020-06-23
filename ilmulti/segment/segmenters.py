@@ -1,6 +1,7 @@
 import re
 import langid
 import warnings
+from urduhack.tokenization import sentence_tokenizer
 
 class BaseSegmenter:
     def __call__(self, content):
@@ -45,7 +46,8 @@ class Segmenter(BaseSegmenter):
             "en": "([.;!?…])",
             "ur": "([.;!?…])",
             "hi": "([।;!?…|I])",
-            "bn": "([।;!?…|I])",
+            "bn": "([।.;!?…|I])",
+            "or": "([।.;!?…|I])",
             "default": "([.;!?…])"
 
         }
@@ -62,7 +64,12 @@ class Segmenter(BaseSegmenter):
             warnings.warn("Language mismatch on text, please sanitize.")
             warnings.warn("Ignore if you know what you're doing")
             # warnings.warn(paragraph)
-        
+
+        # Added by Shashank, specific to Urdu as PatternSegmenter fails for Urdu.
+        # refer https://github.com/urduhack/urduhack for details.
+        if lang=='ur':
+            segments = sentence_tokenizer(paragraph)
+            return (_lang, segments) 
         default = self._segmenter["default"]
         segmenter = self._segmenter.get(lang, default)
         return (_lang, segmenter(paragraph))

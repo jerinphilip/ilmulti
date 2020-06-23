@@ -17,17 +17,17 @@ from ilmulti.utils import download_resources
 
 
 class mm_all:
-    def __init__(self, root=os.path.join(ilmulti.utils.ILMULTI_DIR, 'mm-all')):
-        model_path = os.path.join(root, 'model.pt')
+    def __init__(self, root=os.path.join(ilmulti.utils.ILMULTI_DIR, 'mm-all'), model='model', use_cuda=False):
+        model_path = os.path.join(root, '{}.pt'.format(model))
         # If not model path, wire to download later.
         if not os.path.exists(model_path):
             url = "http://preon.iiit.ac.in/~jerin/models/mm-all.tar.gz"
             download_resources(url, "mm-all.tar.gz")
 
         args = Args(
-            path=model_path, max_tokens=1000, task='translation',
+            path=model_path, max_tokens=96000, task='translation',
             source_lang='src', target_lang='tgt', buffer_size=2,
-            data=[root]
+            data=root
         )
 
         parser = fairseq.options.get_generation_parser(interactive=True)
@@ -37,8 +37,7 @@ class mm_all:
         kw = dict(default_args._get_kwargs())
         args.enhance(print_alignment=True)
         args.enhance(**kw)
-        args.data = 'dummy'
-        fseq_translator = FairseqTranslator(args)
+        fseq_translator = FairseqTranslator(args, use_cuda)
         segmenter = ilmulti.segment.SimpleSegmenter()
         tokenizer = ilmulti.sentencepiece.SentencePieceTokenizer()
         self.engine = ilmulti.translator.MTEngine(fseq_translator, segmenter, tokenizer)
