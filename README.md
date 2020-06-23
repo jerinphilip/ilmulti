@@ -8,7 +8,7 @@ translate. Installation and usage intructions are provided below.
 * **Training**: We use a separate fork of
   [pytorch/fairseq](http://github.com/pytorch/fairseq) at
   [jerinphilip/fairseq-ilmt](http://github.com/jerinphilip/fairseq-ilmt) for
-  training to optimize for our crappy cluster and to plug and play data
+  training to optimize for our cluster and to plug and play data
   easily.
 
 * **Pretrained Models and Other Resources**: 
@@ -41,7 +41,7 @@ The code works with three main components:
 ### 1. Segmenter
 
 To handle segmenting a block of text into sentences, accounting for some
-Indian Language delimiters. This is rather crude and rule based and
+Indian Language delimiters. This is a bit crude and rule based and
 contributed by [Binu Jasim](https://github.com/bnjasim).
 
 ### 2. Tokenization
