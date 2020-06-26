@@ -1,9 +1,11 @@
+import sys
+sys.path.insert(0, '.')
 
-from ilmulti.translator.pretrained import mm_all
+from ilmulti.translator.pretrained import from_pretrained
 from argparse import ArgumentParser
 from pprint import pprint
 
-model = mm_all()
+model = from_pretrained('mm-all-iter0')
 
 def test(sample, language):
     result = model(sample, tgt_lang=language)
