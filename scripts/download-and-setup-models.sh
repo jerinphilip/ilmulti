@@ -6,14 +6,14 @@ set -x;
 # Copy models.
 
 SEVEN_MODELS=(
-    "mm-all"
-    "mm-all+bt"
+    # "mm-all"
+    # "mm-all+bt"
 )
 
 ELEVEN_MODELS=(
     "mm-all-iter0"
-    "mm-all-iter1"
-    "mm-all-to-en-iter1"
+    # "mm-all-iter1"
+    # "mm-all-to-en-iter1"
 )
 
 MODELS=(
@@ -31,7 +31,7 @@ echo "Downloading models"
 for MODEL in ${MODELS[@]}; do
     MODEL_DIR="${SAVE_DIR}/$MODEL"
     mkdir -p ${MODEL_DIR}
-    wget "${BASE_URL}/$MODEL" -O "${MODEL_DIR}/checkpoint_last.pt"
+    wget --continue "${BASE_URL}/$MODEL" -O "${MODEL_DIR}/checkpoint_last.pt"
 done
 
 for MODEL in ${SEVEN_MODELS}; do 

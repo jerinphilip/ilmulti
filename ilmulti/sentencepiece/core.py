@@ -116,10 +116,3 @@ class SentencePieceTokenizer:
         if value[0] == ' ':
             value = value[1:]
         return value
-
-
-if __name__ == '__main__':
-    sp = SentencePieceTokenizer()
-    s = sp("Hello world!",lang='en')
-    print(sp.dictionary())
-    print(s)

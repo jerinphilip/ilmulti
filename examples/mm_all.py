@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '.')
 
 from ilmulti.translator.pretrained import mm_all
 from argparse import ArgumentParser

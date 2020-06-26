@@ -1,15 +1,11 @@
 import re
-import langid
 import warnings
 from urduhack.tokenization import sentence_tokenizer
+from ..utils import detect_lang
 
 class BaseSegmenter:
     def __call__(self, content):
         raise NotImplementedError()
-
-    def _detect_lang(self, content):
-        _lang, prob = langid.classify(content)
-        return _lang, prob
 
 
 class PatternSegmenter(BaseSegmenter):
@@ -56,7 +52,7 @@ class Segmenter(BaseSegmenter):
             self._segmenter[lang] = PatternSegmenter(pattern)
 
     def __call__(self, paragraph, lang=None):
-        _lang, prob = self._detect_lang(paragraph)
+        _, _lang= detect_lang(paragraph)
         if lang is None:
             lang = _lang
 
