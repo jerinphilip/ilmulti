@@ -8,7 +8,7 @@ def build_tokenizer(string):
         return SentencePieceTokenizer(config=config)
 
     if string == 'ilmulti-v1':
-        langs = ['en', 'hi', 'ml', 'ta', 'te', 'ur', 'bn', 'gj', 'pa', 'or', 'mr']
+        langs = ['en', 'hi', 'ml', 'ta', 'te', 'ur', 'bn', 'gu', 'pa', 'or', 'mr']
         config = {lang: 4000 for lang in langs}
         return SentencePieceTokenizer(config=config)
 

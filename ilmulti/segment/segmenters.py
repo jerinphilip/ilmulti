@@ -1,6 +1,5 @@
 import re
 import warnings
-from urduhack.tokenization import sentence_tokenizer
 from ..utils import detect_lang
 
 class BaseSegmenter:
@@ -52,7 +51,7 @@ class Segmenter(BaseSegmenter):
             self._segmenter[lang] = PatternSegmenter(pattern)
 
     def __call__(self, paragraph, lang=None):
-        _, _lang= detect_lang(paragraph)
+        _, _lang= detect_lang(paragraph)[0]
         if lang is None:
             lang = _lang
 
@@ -64,6 +63,8 @@ class Segmenter(BaseSegmenter):
         # Added by Shashank, specific to Urdu as PatternSegmenter fails for Urdu.
         # refer https://github.com/urduhack/urduhack for details.
         if lang=='ur':
+            # Import only if required. Why does this require tensorflow?
+            from urduhack.tokenization import sentence_tokenizer
             segments = sentence_tokenizer(paragraph)
             return (_lang, segments) 
         default = self._segmenter["default"]
@@ -75,7 +76,8 @@ class SimpleSegmenter(BaseSegmenter):
         pass
 
     def __call__(self, paragraph):
-        lang, prob = self._detect_lang(paragraph)
+        _, lang = detect_lang(paragraph)[0]
         lines = paragraph.splitlines()
         return (lang, lines)
+
 

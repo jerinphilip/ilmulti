@@ -1,4 +1,5 @@
 from collections import namedtuple
+import os
 
 # These are heavy dependencies.
 import fairseq
@@ -6,7 +7,7 @@ from fairseq.sequence_generator import SequenceGenerator
 from fairseq import data, options, tasks, tokenizer, utils
 
 from .args import Args
-from ..utils import download_resources
+from ..utils import download_resources, ILMULTI_DIR
 
 Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
 Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
@@ -131,8 +132,11 @@ class FairseqTranslator:
 
 
 
-def build_translator(model, use_cuda):
+def build_translator(model, use_cuda=False):
+    root = ILMULTI_DIR
     model_path = os.path.join(root, model)
+    data = os.path.dirname(model_path)
+    print(data)
     if not os.path.exists(model_path):
         raise Exception(
             "The model does not seem downloaded."
@@ -142,7 +146,7 @@ def build_translator(model, use_cuda):
     args = Args(
         path=model_path, max_tokens=96000, task='translation',
         source_lang='src', target_lang='tgt', buffer_size=2,
-        data=root
+        data=data
     )
 
     import fairseq
@@ -151,6 +155,7 @@ def build_translator(model, use_cuda):
     keyword_arguments = dict(default_args._get_kwargs())
     args.enhance(print_alignment=True)
     args.enhance(**keyword_arguments)
+
     fseq_translator = FairseqTranslator(args, use_cuda)
     return fseq_translator
 
