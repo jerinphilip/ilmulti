@@ -14,7 +14,7 @@ class MTEngine:
         lang, lines = self.segmenter(source)
         sources = []
         for line in lines:
-            lang, tokens = self.tokenizer(line)
+            lang, tokens = self.tokenizer(line, lang=lang)
             src_lang = src_lang or lang
             # Unsupervised tokenization.
             tokens = [ilmulti.utils.language_token(tgt_lang)] + tokens
