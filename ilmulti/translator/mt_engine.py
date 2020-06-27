@@ -22,9 +22,19 @@ class MTEngine:
             sources.append(content)
 
         export = self.translator(sources)
+        export = self._handle_empty_lines_noise(export)
         if detokenize:
             export = self._detokenize(export)
         return export
+
+    def _handle_empty_lines_noise(self, exports):
+        _exports = []
+        for entry in exports:
+            if not entry['src'].strip():
+                entry['tgt'] = ''
+            _exports.append(entry)
+        return _exports
+
 
     def _detokenize(self, export):
         _exports = []

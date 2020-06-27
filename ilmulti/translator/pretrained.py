@@ -11,19 +11,19 @@ PRETRAINED_CONFIG = {
     'mm-all': {
         'model': 'mm-all/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v0',
-        'segmenter': 'simple',
+        'segmenter': 'pattern',
     },
 
     'mm-all-iter1': {
         'model': 'mm-all-iter1/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
-        'segmenter': 'simple',
+        'segmenter': 'pattern',
     },
 
     'mm-all-iter0': {
         'model': 'mm-all-iter0/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
-        'segmenter': 'simple',
+        'segmenter': 'pattern',
     }
 }
 
