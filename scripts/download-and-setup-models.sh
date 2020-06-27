@@ -12,8 +12,8 @@ SEVEN_MODELS=(
 
 ELEVEN_MODELS=(
     "mm-all-iter0"
-    # "mm-all-iter1"
-    # "mm-all-to-en-iter1"
+    "mm-all-iter1"
+    "mm-to-en-iter1"
 )
 
 MODELS=(
@@ -45,7 +45,7 @@ for MODEL in ${SEVEN_MODELS}; do
         $MODEL_DIR/dict.tgt.txt 
 done
 
-for MODEL in ${ELEVEN_MODELS}; do 
+for MODEL in ${ELEVEN_MODELS[@]}; do 
     MODEL_DIR="${SAVE_DIR}/$MODEL"
     mkdir -p ${MODEL_DIR}
     SRC_DIR="$(dirname "$0")/../"
