@@ -136,7 +136,6 @@ def build_translator(model, use_cuda=False):
     root = ILMULTI_DIR
     model_path = os.path.join(root, model)
     data = os.path.dirname(model_path)
-    print(data)
     if not os.path.exists(model_path):
         raise Exception(
             "The model does not seem downloaded."
@@ -156,7 +155,7 @@ def build_translator(model, use_cuda=False):
     args.enhance(print_alignment=True)
     args.enhance(**keyword_arguments)
 
-    fseq_translator = FairseqTranslator(args, use_cuda)
+    fseq_translator = FairseqTranslator(args, use_cuda=use_cuda)
     return fseq_translator
 
 
