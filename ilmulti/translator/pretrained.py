@@ -41,7 +41,7 @@ def from_pretrained(tag, use_cuda=False):
     from ..sentencepiece import build_tokenizer
     from .mt_engine import MTEngine
 
-    translator = build_translator(config['model'])
+    translator = build_translator(config['model'], use_cuda=use_cuda)
     segmenter = build_segmenter(config['segmenter'])
     tokenizer = build_tokenizer(config['tokenizer'])
     engine = MTEngine(translator, segmenter, tokenizer)
