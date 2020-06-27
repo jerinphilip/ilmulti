@@ -24,7 +24,14 @@ PRETRAINED_CONFIG = {
         'model': 'mm-all-iter0/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
         'segmenter': 'pattern',
-    }
+    },
+
+    'mm-to-en-iter1': {
+        'model': 'mm-to-en-iter1/checkpoint_last.pt',
+        'tokenizer': 'ilmulti-v1',
+        'segmenter': 'pattern',
+    },
+
 }
 
 def from_pretrained(tag, use_cuda=False):
