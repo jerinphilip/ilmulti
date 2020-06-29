@@ -24,17 +24,24 @@ python3 setup.py install --user
 
 ```
 
+<<<<<<< HEAD
 **Downloading Models**: The script
 [`examples/download-and-setup-models.sh`](./examples/download-and-setup-models.sh)
 downloads the model and dictionary files required for running
 [`examples/mm_all.py`](./examples/mm_all.py). Which models to download
 can be configured in the script.
 
+=======
+>>>>>>> integration
 ## Usage
 
 ```python3
 from ilmulti.translator import from_pretrained
 
 translator = from_pretrained(tag='mm-all')
+<<<<<<< HEAD
 sample = translator("The quick brown fox jumps over the lazy dog", tgt_lang='hi')
+=======
+sample = translator("The most accurate translation of this sentence", tgt_lang='hi')
+>>>>>>> integration
 ```
