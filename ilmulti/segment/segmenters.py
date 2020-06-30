@@ -76,7 +76,6 @@ class SimpleSegmenter(BaseSegmenter):
         pass
 
     def __call__(self, paragraph, **unused):
-    def __call__(self, paragraph):
         _, lang = detect_lang(paragraph)[0]
         lines = paragraph.splitlines()
         return (lang, lines)
