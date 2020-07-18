@@ -32,6 +32,24 @@ PRETRAINED_CONFIG = {
         'segmenter': 'pattern',
     },
 
+    'mm-to-en-iter2': {                                                 
+        'model': 'mm-to-en-iter2/checkpoint_last.pt',                   
+        'tokenizer': 'ilmulti-v1',                                      
+        'segmenter': 'pattern',                                         
+    }, 
+
+    'mm-to-en-iter3': {                                                 
+        'model': 'mm-to-en-iter3/checkpoint_last.pt',                   
+        'tokenizer': 'ilmulti-v1',                                      
+        'segmenter': 'pattern',                                         
+    },
+    
+    'mm-all-iter3': {                                                 
+        'model': 'mm-all-iter3/checkpoint_last.pt',                   
+        'tokenizer': 'ilmulti-v1',                                      
+        'segmenter': 'pattern',                                         
+    }, 
+
 }
 
 def from_pretrained(tag, use_cuda=False):
