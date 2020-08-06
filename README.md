@@ -25,7 +25,7 @@ python3 setup.py install --user
 ```
 
 **Downloading Models**: The script
-[`examples/download-and-setup-models.sh`](./examples/download-and-setup-models.sh)
+[`scripts/download-and-setup-models.sh`](./scripts/download-and-setup-models.sh)
 downloads the model and dictionary files required for running
 [`examples/mm_all.py`](./examples/mm_all.py). Which models to download
 can be configured in the script.
