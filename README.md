@@ -17,6 +17,8 @@ translate. Installation and usage intructions are provided below.
 
 ## Installation
 
+The code is tested to work with the fairseq-fork which is branched from v0.7.2 and torch version 1.0.0.
+
 ```bash
 # --user is optional
 python3 -m pip install -r requirements.txt --user  
