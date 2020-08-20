@@ -11,43 +11,43 @@ PRETRAINED_CONFIG = {
     'mm-all': {
         'model': 'mm-all/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v0',
-        'segmenter': 'pattern',
+        'segmenter': 'punkt.pib',
     },
 
     'mm-all-iter1': {
         'model': 'mm-all-iter1/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
-        'segmenter': 'pattern',
+        'segmenter': 'punkt.pib',
     },
 
     'mm-all-iter0': {
         'model': 'mm-all-iter0/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
-        'segmenter': 'pattern',
+        'segmenter': 'punkt.pib',
     },
 
     'mm-to-en-iter1': {
         'model': 'mm-to-en-iter1/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
-        'segmenter': 'pattern',
+        'segmenter': 'punkt.pib',
     },
 
     'mm-to-en-iter2': {                                                 
         'model': 'mm-to-en-iter2/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
-        'segmenter': 'pattern',                                         
+        'segmenter': 'punkt.pib',                                         
     }, 
 
     'mm-to-en-iter3': {                                                 
         'model': 'mm-to-en-iter3/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
-        'segmenter': 'pattern',                                         
+        'segmenter': 'punkt.pib',                                         
     },
     
     'mm-all-iter3': {                                                 
         'model': 'mm-all-iter3/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
-        'segmenter': 'pattern',                                         
+        'segmenter': 'punkt.pib',                                         
     }, 
 
 }
