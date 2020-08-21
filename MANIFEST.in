@@ -1,3 +1,4 @@
 include ilmulti/sentencepiece/models/*.model
 include ilmulti/sentencepiece/models/*.vocab
+include ilmulti/segment/punkt_segmenter/models/*
 

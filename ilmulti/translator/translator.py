@@ -2,9 +2,22 @@ from collections import namedtuple
 import os
 
 # These are heavy dependencies.
-import fairseq
-from fairseq.sequence_generator import SequenceGenerator
-from fairseq import data, options, tasks, tokenizer, utils
+try:
+    import fairseq
+    import torch
+    from fairseq.sequence_generator import SequenceGenerator
+    from fairseq import data, options, tasks, tokenizer, utils
+except ImportError:
+    warnings.warn(
+    """
+    Please check if you have installed specified versions of torch,
+    fairseq-ilmt etc; These are not hard-requirements except for the
+    translation module and hence not specified in setup.py or
+    requirements.txt. Exiting as absence of these modules is fatal to
+    this script.  
+    """
+    ) 
+    exit()
 
 from .args import Args
 from ..utils import download_resources, ILMULTI_DIR
@@ -116,7 +129,6 @@ class FairseqTranslator:
             for src_str in lines
         ]
 
-        import torch
         lengths = torch.LongTensor([t.numel() for t in tokens])
         itr = task.get_batch_iterator(
             dataset=task.build_dataset_for_inference(tokens, lengths),

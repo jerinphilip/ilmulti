@@ -1,11 +1,7 @@
 import re
 import warnings
 from ..utils import detect_lang
-
-class BaseSegmenter:
-    def __call__(self, content):
-        raise NotImplementedError()
-
+from .base_segmenter import BaseSegmenter
 
 class PatternSegmenter(BaseSegmenter):
     def __init__(self, pattern):
@@ -60,24 +56,6 @@ class Segmenter(BaseSegmenter):
             warnings.warn("Ignore if you know what you're doing")
             # warnings.warn(paragraph)
 
-        # Added by Shashank, specific to Urdu as PatternSegmenter fails for Urdu.
-        # refer https://github.com/urduhack/urduhack for details.
-        if lang=='ur':
-            # Import only if required. Why does this require tensorflow?
-            from urduhack.tokenization import sentence_tokenizer
-            segments = sentence_tokenizer(paragraph)
-            return (_lang, segments) 
         default = self._segmenter["default"]
         segmenter = self._segmenter.get(lang, default)
         return (_lang, segmenter(paragraph))
-
-class SimpleSegmenter(BaseSegmenter):
-    def __init__(self):
-        pass
-
-    def __call__(self, paragraph, **unused):
-        _, lang = detect_lang(paragraph)[0]
-        lines = paragraph.splitlines()
-        return (lang, lines)
-
-

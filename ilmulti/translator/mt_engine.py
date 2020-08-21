@@ -11,10 +11,10 @@ class MTEngine:
         Uses segmenter -> tokenizer -> translator and lays out the
         interaction.
         """
-        lang, lines = self.segmenter(source)
+        lang, lines = self.segmenter(source, lang=src_lang)
         sources = []
         for line in lines:
-            lang, tokens = self.tokenizer(line, lang=lang)
+            lang, tokens = self.tokenizer(line, lang=src_lang)
             src_lang = src_lang or lang
             # Unsupervised tokenization.
             tokens = [ilmulti.utils.language_token(tgt_lang)] + tokens
