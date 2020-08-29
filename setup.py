@@ -22,15 +22,16 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    # 'requests', 'maya', 'records',
     'langdetect', 
     'langid',
     'sentencepiece',
+    'nltk'
+
 ]
 
 # What packages are optional?
 EXTRAS = {
-    # 'fancy feature': ['django'],
+    'translation': ['fairseq==0.8.0', 'torch==1.1.0']
 }
 
 # The rest you shouldn't have to touch too much :)
