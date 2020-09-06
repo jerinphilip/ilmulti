@@ -47,8 +47,7 @@ class BLEUAligner:
         for idx in missing_idxs:
             hyps[idx] = ''
 
-        hyps = '\n'.join(hyps)
-        hyp_io = StringIO(hyps)
+        hyp_io = StringIO('\n'.join(hyps))
 
         src, tgt = self.bleu_align(src_io, tgt_io, hyp_io)
 
