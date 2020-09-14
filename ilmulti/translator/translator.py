@@ -1,5 +1,6 @@
-from collections import namedtuple
 import os
+import warnings
+from collections import namedtuple
 
 # These are heavy dependencies.
 try:

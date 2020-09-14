@@ -75,3 +75,57 @@ class BLEUAligner:
         tgts = tgt_out.getvalue().splitlines()
 
         return srcs, tgts
+
+    def bleu_align_from_raw(self, src_content, tgt_content, src_to_tgt_content=None, preprocess=False, src_lang=None, tgt_lang=None):
+        """
+        Wrapper for easier access.
+        """
+
+        def preprocess_fn(content, lang):
+            _lang, segments = self.segmenter(content, lang)
+            tokenized_segments = []
+            for segment in segments:
+                _lang, tokenized_segment = self.tokenizer(segment, lang)
+                joined = ' '.join(tokenized_segment)
+                tokenized_segments.append(joined)
+            return '\n'.join(tokenized_segments)
+
+
+
+        if preprocess:
+            src_content = preprocess_fn(src_content, src_lang)
+            tgt_content = preprocess_fn(tgt_content, tgt_lang)
+            if src_to_tgt_content:
+                src_to_tgt_content = preprocess_fn(src_to_tgt_content, tgt_lang)
+
+        srcfile = StringIO(src_content)
+        tgtfile = StringIO(tgt_content)
+        if src_to_tgt_content:
+            src_to_tgt_content = StringIO(src_to_tgt_content)
+        return self.bleu_align(srcfile, tgtfile, src_to_tgt_content)
+
+    def postprocess(self, srcs, tgts, src_lang, tgt_lang):
+        def output_render(lines):
+            detok = lambda x: self.tokenizer.detokenize(x)
+            lines = list(map(detok, lines))
+            return lines
+
+        srcs = output_render(srcs)
+        tgts = output_render(tgts)
+
+        postprocd_srcs = []
+        postprocd_tgts = []
+
+        for src, tgt in zip(srcs, tgts):
+            _, src_segments = self.segmenter(src, src_lang)
+            _, tgt_segments = self.segmenter(tgt, tgt_lang)
+            if len(src_segments) == len(tgt_segments):
+                postprocd_srcs.extend(src_segments)
+                postprocd_tgts.extend(tgt_segments)
+            else:
+                postprocd_srcs.append(src)
+                postprocd_tgts.append(tgt)
+
+        postprocd_src = '\n'.join(postprocd_srcs)
+        postprocd_tgt = '\n'.join(postprocd_tgts)
+        return postprocd_src, postprocd_tgt

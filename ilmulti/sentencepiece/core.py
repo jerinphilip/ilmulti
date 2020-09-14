@@ -36,6 +36,8 @@ class LazySPM:
 
 class SentencePieceTokenizer:
     def __init__(self, config):
+        """
+        """
         self.tokenizer = {}
 
         cdir = os.path.abspath(os.path.dirname(__file__))   
@@ -95,6 +97,7 @@ class SentencePieceTokenizer:
             tokenizer_vocab = self.tokenizer[key].vocab
             vocab = vocab.union(tokenizer_vocab)
 
+        # Sorting is critical; 
         vocab = sorted(list(vocab))
         for word in vocab:
             dictionary.add_symbol(word)
