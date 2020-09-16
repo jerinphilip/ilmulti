@@ -26,12 +26,11 @@ REQUIRED = [
     'langid',
     'sentencepiece',
     'nltk'
-
 ]
+
 
 # What packages are optional?
 EXTRAS = {
-    'translation': ['fairseq==0.8.0', 'torch==1.1.0']
 }
 
 # The rest you shouldn't have to touch too much :)
@@ -131,4 +130,5 @@ setup(
     cmdclass={
         'upload': UploadCommand,
     },
+
 )
