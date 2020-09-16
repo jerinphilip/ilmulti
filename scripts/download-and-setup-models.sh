@@ -11,10 +11,10 @@ SEVEN_MODELS=(
 )
 
 ELEVEN_MODELS=(
-    "mm-all-iter0"
+    # "mm-all-iter0"
     "mm-all-iter1"
-    "mm-to-en-iter1"
-    "mm-to-en-iter2"
+    # "mm-to-en-iter1"
+    # "mm-to-en-iter2"
     "mm-to-en-iter3"
 )
 
