@@ -38,7 +38,7 @@ downloads the model and dictionary files required for running
 [`examples/mm_all.py`](./examples/mm_all.py). Which models to download can be
 configured in the script.
 
-A working example using the wrappers in this code can be found in this [Colab Notebook](https://colab.research.google.com/drive/1KOvjawhzPXOQ6RLlFBFeInkuuR0QAWTK?usp=sharing).
+A working example using the wrappers in this code can be found in [this](https://colab.research.google.com/drive/1KOvjawhzPXOQ6RLlFBFeInkuuR0QAWTK?usp=sharing) colab notebook. Thanks @Nimishasri.
 
 ## Usage
 
