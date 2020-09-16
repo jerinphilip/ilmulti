@@ -17,11 +17,17 @@ translate. Installation and usage intructions are provided below.
 
 ## Installation
 
-The code is tested to work with the fairseq-fork which is branched from v0.7.2 and torch version 1.0.0.
+The code is tested to work with the fairseq-fork which is branched from v0.8.0 and torch version 1.0.0.
 
 ```bash
 # --user is optional
+
+# Check requirements.txt, packages for translation:
+# fairseq-ilmt@lrec-2020 and torch  are not enabled by default.
 python3 -m pip install -r requirements.txt --user  
+
+# Once requirements are installed, you can install ilmulti into library.
+
 python3 setup.py install --user 
 
 ```
