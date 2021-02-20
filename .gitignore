@@ -10,4 +10,11 @@ ilmulti.egg-info/
 
 # Ignore python environment
 env
+venv
 .vscode
+
+docs/build
+htmlcov
+.coverage
+.cache
+

@@ -2,17 +2,19 @@
 
 set -x;
 
-MONOLINGUAL_PREFIX="../monolingual-exports-pib/raw"
-TAG="pib.news"
-SAVE_PATH="ilmulti/segment/punkt_segmenter/models"
+
+MONOLINGUAL_PREFIX="../mono-pib/raw"
+TAG="pib"
+SAVE_PATH="../ilmt-binary-files/punkt/$TAG"
+mkdir -p $SAVE_PATH
 
 for LANGCODE in bn en gu hi ml mr or pa ta te ur
 do
     ARGS=(
         --train-corpus "$MONOLINGUAL_PREFIX.$LANGCODE"
-        --save-model "$SAVE_PATH/$LANGCODE.$TAG.pickle"
+        --save-model "$SAVE_PATH/$LANGCODE.pickle"
         --lang $LANGCODE
     )
 
-    python3 -m ilmulti.segment.punkt_segmenter.train "${ARGS[@]}"
+    python3 -m ilmulti.cli.punkt_train "${ARGS[@]}"
 done;

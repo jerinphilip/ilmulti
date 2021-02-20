@@ -25,7 +25,7 @@ MODELS=(
 
 
 # HOME='/home/darth.vader'
-SAVE_DIR=${HOME}/.ilmulti
+SAVE_DIR=${ILMULTI_DATA_ROOT}/translation/
 BASE_URL="http://preon.iiit.ac.in/~jerin/resources/models"
 mkdir -p ${SAVE_DIR}/
 

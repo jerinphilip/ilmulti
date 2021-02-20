@@ -10,5 +10,4 @@ if 'HOSTNAME' in os.environ:
         ILMULTI_DIR = os.path.join('/home/{user}'.format(user=user), '.ilmulti')
 
 from .language_utils import canonicalize, language_token
-from .download_utils import download_resources
 from .language_utils import detect_lang

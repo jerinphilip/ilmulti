@@ -1,3 +1,16 @@
-VERSION = (0, 0, 1)
+from collections import OrderedDict
+import subprocess
 
-__version__ = '.'.join(map(str, VERSION))
+def git_short():
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+
+
+SEMANTIC = OrderedDict([
+    ('major',  0),
+    ('minor',  2),
+    ('patch',  0),
+    ('suffix',  'alpha')
+])
+
+
+__version__ = '{major}.{minor}.{patch}-{suffix}'.format(**SEMANTIC.items())

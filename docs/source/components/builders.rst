@@ -1,0 +1,18 @@
+Builders
+========
+
+While components provide an API to contruct the individual components, not all
+of the components are compatible with each other. For example, a tokenizer from
+``ilmulti-v1`` model will not be compatible with an ``ilmulti-v2`` translation
+model due to a breaking change.
+
+To prevent this, the library provides methods to build systems on the basis of
+tags, ensuring the components constructed are compatible with each other.
+
+.. automodule:: ilmulti.builder
+.. autoclass:: ilmulti.builder.Config
+    :members:
+    :undoc-members:
+.. autoclass:: ilmulti.builder.Builder
+    :undoc-members:
+    :members:

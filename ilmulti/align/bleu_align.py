@@ -3,10 +3,10 @@ from bleualign.align import Aligner
 from ilmulti.utils.language_utils import inject_token
 
 class BLEUAligner:
-    def __init__(self, model, tokenizer, segmenter):
+    def __init__(self, model, tokenizer, splitter):
         self.model = model
         self.tokenizer = tokenizer
-        self.segmenter = segmenter
+        self.splitter = splitter
 
     def __call__(self, src, src_lang, tgt, tgt_lang, galechurch=False):
         """
@@ -21,13 +21,13 @@ class BLEUAligner:
             return tokenized, StringIO(lstring)
 
         def process(content, lang):
-            lang, segments = self.segmenter(content, lang=lang)
+            lang, sentences = self.splitter(content, lang=lang)
             missing_idxs = []
-            for idx, segment in enumerate(segments):
-                if not segment.strip():
+            for idx, sentence in enumerate(sentences):
+                if not sentence.strip():
                     missing_idxs.append(idx)
 
-            tokenized, _io = create_stringio(segments, lang)
+            tokenized, _io = create_stringio(sentences, lang)
             return tokenized, _io, missing_idxs
 
         src_tokenized, src_io, missing_idxs = process(src, src_lang)
@@ -82,13 +82,13 @@ class BLEUAligner:
         """
 
         def preprocess_fn(content, lang):
-            _lang, segments = self.segmenter(content, lang)
-            tokenized_segments = []
-            for segment in segments:
-                _lang, tokenized_segment = self.tokenizer(segment, lang)
-                joined = ' '.join(tokenized_segment)
-                tokenized_segments.append(joined)
-            return '\n'.join(tokenized_segments)
+            _lang, sentences = self.splitter(content, lang)
+            tokenized_sentences = []
+            for sentence in sentences:
+                _lang, tokenized_sentence = self.tokenizer(sentence, lang)
+                joined = ' '.join(tokenized_sentence)
+                tokenized_sentences.append(joined)
+            return '\n'.join(tokenized_sentences)
 
 
 
@@ -117,11 +117,11 @@ class BLEUAligner:
         postprocd_tgts = []
 
         for src, tgt in zip(srcs, tgts):
-            _, src_segments = self.segmenter(src, src_lang)
-            _, tgt_segments = self.segmenter(tgt, tgt_lang)
-            if len(src_segments) == len(tgt_segments):
-                postprocd_srcs.extend(src_segments)
-                postprocd_tgts.extend(tgt_segments)
+            _, src_sentences = self.splitter(src, src_lang)
+            _, tgt_sentences = self.splitter(tgt, tgt_lang)
+            if len(src_sentences) == len(tgt_sentences):
+                postprocd_srcs.extend(src_sentences)
+                postprocd_tgts.extend(tgt_sentences)
             else:
                 postprocd_srcs.append(src)
                 postprocd_tgts.append(tgt)
