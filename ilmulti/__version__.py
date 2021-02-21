@@ -2,7 +2,10 @@ from collections import OrderedDict
 import subprocess
 
 def git_short():
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+    output = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+    output = output.decode('utf-8')
+    output = output.replace(' ', '')
+    return output
 
 
 SEMANTIC = OrderedDict([
@@ -12,5 +15,5 @@ SEMANTIC = OrderedDict([
     ('suffix',  'alpha')
 ])
 
-
-__version__ = '{major}.{minor}.{patch}-{suffix}'.format(**SEMANTIC.items())
+kwargs = dict(SEMANTIC.items())
+__version__ = '{major}.{minor}.{patch}-{suffix}'.format(**kwargs)

@@ -15,7 +15,7 @@ help:
 
 export: html
 	# Specify export target in command-line
-	rsync -rvz $(BUILDDIR)/html/ $(EXPORT_TARGET)
+	rsync -rvz $(BUILDDIR)/singlehtml/ $(EXPORT_TARGET)
 
 .PHONY: help Makefile export
 

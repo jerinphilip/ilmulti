@@ -67,7 +67,7 @@ html_static_path = ['_static']
 
 def linkcode_resolve(domain, info):
     import ilmulti
-    commit = ilmulti.version.git_short()
+
     def find_source():
         # try to find the file and line number, based on code from numpy:
         # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
@@ -88,5 +88,6 @@ def linkcode_resolve(domain, info):
     except Exception:
         filename = info['module'].replace('.', '/') + '.py'
 
+    commit = ilmulti.git_short()
     return "https://github.com/jerinphilip/ilmulti/blob/%s/%s" % (commit, filename)
 
