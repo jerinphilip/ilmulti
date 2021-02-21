@@ -2,9 +2,8 @@ from collections import OrderedDict
 import subprocess
 
 def git_short():
-    output = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-    output = output.decode('utf-8')
-    output = output.replace(' ', '')
+    output = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+    output = output.decode('utf-8').strip()
     return output
 
 
