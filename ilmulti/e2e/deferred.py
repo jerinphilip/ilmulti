@@ -25,7 +25,7 @@ class DeferredTranslator:
         self.sizes = {}
         self.lines = {}
 
-    def queue(self, Id, source, tgt_lang, src_lang=None, detokenize=True):
+    def queue(self, Id, source, tgt_lang, src_lang=None):
         """
         Queues a request identified by ``(Id, Source)``. Does not translate
         immediately, preprocesses for optimal batch allocation. 
@@ -35,16 +35,16 @@ class DeferredTranslator:
         # Keep account of how many lines we have.
         self.lines[Id] = len(lines)
 
-        for line_id, line in enumerat(lines):
+        for line_id, line in enumerate(lines):
             lang, tokens = self.tokenizer(line, lang=src_lang)
-            line_num_tokens = len(tokens + 1 ) # accounting of injected
+            line_num_tokens = len(tokens) + 1  # accounting of injected
             tokenized_line = ' '.join(tokens)
             key = '{}-{}'.format(Id, line_id)
             self.sizes[key] = line_num_tokens
             with_target_token = inject_token([tokenized_line], tgt_lang)
             self.storage.set_source(key, with_target_token[0])
 
-    def run(self):
+    def run(self, detokenize=True):
         """
         Runs the translation after all the requests are in. Blocks until all
         the requests have finished translating.
@@ -52,27 +52,34 @@ class DeferredTranslator:
         def get_batches(sizes):
             tuples = list(sizes.items())
             # sort on the basis of length
-            sorted_tuples = sorted(tuples, lambda x: x[1])
+            sorted_tuples = sorted(tuples, key=lambda x: x[1])
             sources = []
             Ids = []
             current_tokens = 0
+
             for candidate in sorted_tuples:
-                Id, size = candidate
-                def addCurrent():
+                Id, current_size = candidate
+
+                if current_tokens + current_size  < self.max_tokens:
                     source = self.storage.get_source(Id)
                     sources.append(source)
                     Ids.append(Id)
-
-                if current_tokens + candidate  < max_tokens:
-                    addCurrent()
+                    current_tokens += current_size
 
                 else:
                     yield {'sources': sources, 'ids': Ids}
                     # Reset
-                    sources = []
-                    Ids = []
-                    current_tokens = 0
-                    addCurrent()
+                    sources.clear()
+                    Ids.clear()
+                    current_tokens *= 0
+
+                    source = self.storage.get_source(Id)
+                    sources.append(source)
+                    Ids.append(Id)
+                    current_tokens += current_size
+
+            if sources:
+                yield {'sources': source, 'ids': Ids}
 
         # Translate batches, set to lmdb.
         for batch in get_batches(self.sizes):
@@ -86,7 +93,7 @@ class DeferredTranslator:
         by ``Id`` once ``run()`` finishes translations.
         """
         translations = []
-        for line_id in self.lines[Id]:
+        for line_id in range(self.lines[Id]):
             key = '{}-{}'.format(Id, line_id)
             translation = self.storage.get_target(key)
             translations.append(translation)
@@ -110,3 +117,7 @@ class DeferredTranslator:
             entry['src'] = entry['src'][9:]
             _exports.append(entry)
         return _exports
+
+    @classmethod
+    def fromBlocking(cls, blocking_translator, storage, max_tokens):
+        return cls(blocking_translator.translator, blocking_translator.splitter, blocking_translator.tokenizer, storage, max_tokens)
