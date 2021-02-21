@@ -50,6 +50,12 @@ PRETRAINED_CONFIG = {
         'splitter': 'punkt.pib',                                         
     }, 
 
+    'm2en4' : {
+        'model': 'm2en4/checkpoint_last.pt',                   
+        'tokenizer': 'ilmulti-v1',                                      
+        'splitter': 'punkt.pib',                                         
+    },
+
 }
 
 def from_pretrained(tag, use_cuda=False):

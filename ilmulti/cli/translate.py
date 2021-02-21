@@ -2,8 +2,9 @@ from argparse import ArgumentParser
 import sys
 
 def create_parser():
+    from ..translate.pretrained import PRETRAINED_CONFIG
     parser = ArgumentParser(description='Extract sentences from a blob of text')
-    parser.add_argument('--model', choices=['mm-all-iter1', 'mm-all-iter2', 'mm-all-iter3'], help='Type of splitter to use', required=True)
+    parser.add_argument('--model', choices=list(PRETRAINED_CONFIG.keys()), help='Model to use in translation', required=True)
     parser.add_argument('--tgt-lang', required=True, help='Language of the input-blob of text if known')
     parser.add_argument('--input', default=None, help='Path to input file, default is stdin')
     parser.add_argument('--output', default=None, help='Path to output file, default is stdout')
