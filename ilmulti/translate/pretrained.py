@@ -63,10 +63,10 @@ def from_pretrained(tag, use_cuda=False):
     from .translator import build_translator
     from ..ssplit import build_splitter
     from ..tokenize import build_tokenizer
-    from ..packaged import PackagedSystem
+    from ..e2e import BlockingTranslator
 
     translator = build_translator(config['model'], use_cuda=use_cuda)
     splitter = build_splitter(config['splitter'])
     tokenizer = build_tokenizer(config['tokenizer'])
-    engine = PackagedSystem(translator, splitter, tokenizer)
+    engine = BlockingTranslator(translator, splitter, tokenizer)
     return engine

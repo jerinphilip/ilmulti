@@ -1,6 +1,9 @@
-from .utils.language_utils import inject_token
+from ..utils.language_utils import inject_token
 
-class PackagedSystem:
+class BlockingTranslator:
+    """
+    A blocking translator.
+    """
     def __init__(self, translator, splitter, tokenizer):
         self.splitter = splitter
         self.tokenizer = tokenizer
