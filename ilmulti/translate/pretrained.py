@@ -14,37 +14,37 @@ PRETRAINED_CONFIG = {
         'splitter': 'punkt.pib',
     },
 
-    'mm-all-iter1': {
+    'm2m1': {
         'model': 'mm-all-iter1/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
         'splitter': 'punkt.pib',
     },
 
-    'mm-all-iter0': {
+    'm2m0': {
         'model': 'mm-all-iter0/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
         'splitter': 'punkt.pib',
     },
 
-    'mm-to-en-iter1': {
+    'm2en1': {
         'model': 'mm-to-en-iter1/checkpoint_last.pt',
         'tokenizer': 'ilmulti-v1',
         'splitter': 'punkt.pib',
     },
 
-    'mm-to-en-iter2': {                                                 
+    'm2en2': {                                                 
         'model': 'mm-to-en-iter2/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
         'splitter': 'punkt.pib',                                         
     }, 
 
-    'mm-to-en-iter3': {                                                 
+    'm2en3': {                                                 
         'model': 'mm-to-en-iter3/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
         'splitter': 'punkt.pib',                                         
     },
     
-    'mm-all-iter3': {                                                 
+    'm2m3': {                                                 
         'model': 'mm-all-iter3/checkpoint_last.pt',                   
         'tokenizer': 'ilmulti-v1',                                      
         'splitter': 'punkt.pib',                                         
