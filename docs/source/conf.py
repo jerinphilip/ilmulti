@@ -89,5 +89,6 @@ def linkcode_resolve(domain, info):
         filename = info['module'].replace('.', '/') + '.py'
 
     commit = ilmulti.git_short()
-    return "https://github.com/jerinphilip/ilmulti/blob/%s/%s" % (commit, filename)
+    repository = 'shashanksiripragada/ilmulti-dev'
+    return "https://github.com/%s/blob/%s/%s" % (repository, commit, filename)
 

@@ -49,43 +49,13 @@ class DeferredTranslator:
         Runs the translation after all the requests are in. Blocks until all
         the requests have finished translating.
         """
-        def get_batches(sizes):
-            tuples = list(sizes.items())
-            # sort on the basis of length
-            sorted_tuples = sorted(tuples, key=lambda x: x[1])
-            sources = []
-            Ids = []
-            current_tokens = 0
-
-            for candidate in sorted_tuples:
-                Id, current_size = candidate
-
-                if current_tokens + current_size  < self.max_tokens:
-                    source = self.storage.get_source(Id)
-                    sources.append(source)
-                    Ids.append(Id)
-                    current_tokens += current_size
-
-                else:
-                    yield {'sources': sources, 'ids': Ids}
-                    # Reset
-                    sources.clear()
-                    Ids.clear()
-                    current_tokens *= 0
-
-                    source = self.storage.get_source(Id)
-                    sources.append(source)
-                    Ids.append(Id)
-                    current_tokens += current_size
-
-            if sources:
-                yield {'sources': source, 'ids': Ids}
 
         # Translate batches, set to lmdb.
-        for batch in get_batches(self.sizes):
+        for batch in get_batches(self.storage, self.sizes, self.max_tokens):
             export = self.translator(batch['sources'], detokenize)
             for Id, entry in zip(batch['ids'], export):
-                self.storage.set_target(Id, entry['tgt'])
+                transform = lambda x: self.tokenizer.detokenize(x) if detokenize else lambda x: x
+                self.storage.set_target(Id, transform(entry['tgt']))
 
     def collect(self, Id):
         """
@@ -121,3 +91,35 @@ class DeferredTranslator:
     @classmethod
     def fromBlocking(cls, blocking_translator, storage, max_tokens):
         return cls(blocking_translator.translator, blocking_translator.splitter, blocking_translator.tokenizer, storage, max_tokens)
+
+def get_batches(storage, sizes, max_tokens):
+    tuples = list(sizes.items())
+    # sort on the basis of length
+    sorted_tuples = sorted(tuples, key=lambda x: x[1])
+    sources = []
+    Ids = []
+    current_tokens = 0
+
+    for candidate in sorted_tuples:
+        Id, current_size = candidate
+
+        if current_size * (len(sources) + 1) <= max_tokens:
+            source = storage.get_source(Id)
+            sources.append(source)
+            Ids.append(Id)
+            current_tokens += current_size
+
+        else:
+            yield {'sources': sources, 'ids': Ids}
+            # Reset
+            sources.clear()
+            Ids.clear()
+            current_tokens *= 0
+
+            source = storage.get_source(Id)
+            sources.append(source)
+            Ids.append(Id)
+            current_tokens += current_size
+
+    if sources:
+        yield {'sources': source, 'ids': Ids}
