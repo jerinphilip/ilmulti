@@ -8,7 +8,7 @@ class BLEUAligner:
         self.tokenizer = tokenizer
         self.splitter = splitter
 
-    def __call__(self, src, src_lang, tgt, tgt_lang, galechurch=False):
+    def __call__(self, src, src_lang, tgt, tgt_lang, galechurch=False, detokenize=True):
         """
             Input: Paragraphs in two languages and their language codes.
             Output: Obtained parallel sentences using BLEUAlign
@@ -49,7 +49,9 @@ class BLEUAligner:
 
         hyp_io = StringIO('\n'.join(hyps))
 
-        src, tgt = self.bleu_align(src_io, tgt_io, hyp_io)
+        src_tokenized, tgt_tokenized = self.bleu_align(src_io, tgt_io, hyp_io)
+        src = [self.tokenizer.detokenize(s) for s in src_tokenized]
+        tgt = [self.tokenizer.detokenize(s) for s in tgt_tokenized]
 
         return (src_tokenized, hyps), (src, tgt) 
 
