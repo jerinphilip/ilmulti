@@ -5,3 +5,4 @@ Command Line
     cmd/split
     cmd/tokenize
     cmd/translate
+    cmd/align

@@ -27,3 +27,15 @@ python3 -m pip install git+https://github.com/jerinphilip/fairseq-ilmt@lrec-2020
 
 These are required for the translation functionality through fairseq models to
 work.
+
+`Bleualign` is a requirement for aligning parallel sentences through the models supplied.
+
+```bash
+python3 -m pip install git+https://github.com/rsennrich/Bleualign
+```
+
+`Storage` for delayed translation mechanism uses `lmdb`
+
+```bash
+python3 -m pip install lmdb
+```
