@@ -1,25 +1,30 @@
 import os
-import sentencepiece as spm
 from warnings import warn
-from ilmulti.utils import language_token, detect_lang
+from sentencepiece import SentencePieceProcessor
 from collections import Counter
-from ..utils.env_utils import resolve
 
-class SentencePieceTokenizer:
+from ..utils.language_utils import language_token, detect_lang
+from ..utils.functional import InvertibleFunctor, MultiFunctor, ConfigBuildable
+
+class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
     def __init__(self, path, lang, units):
         self.path = path
         self.lang = lang
         self.units = units
-        self.build_vocabulary()
+        self.load_vocabulary()
         self.load_model()
+
+    @classmethod
+    def fromConfig(cls, config):
+        return cls(config['path'], config['lang'], config['units'])
 
     def load_model(self):
         model_file = '{lang}.{units}.model'.format(lang=self.lang, units=self.units)
         model_path = os.path.join(self.path, model_file)
-        self.model = spm.SentencePieceProcessor()
+        self.model = SentencePieceProcessor()
         self.model.load(model_path)
 
-    def build_vocabulary(self):
+    def load_vocabulary(self):
         vocab_file = '{}.{}.vocab'.format(self.lang, self.units)
         vocab_path = os.path.join(self.path, vocab_file)
         self.vocab = set()
@@ -28,94 +33,60 @@ class SentencePieceTokenizer:
                 word, _ = line.strip().split()
                 self.vocab.add(word)
 
-    def __call__(self, text):
+    def transform(self, text: str):
         tokens = self.model.EncodeAsPieces(text)
         clean = lambda x: x in self.vocab
         tokens = list(filter(clean, tokens))
-        return tokens
+        return ' '.join(tokens)
 
-class MultiSentencePieceTokenizer:
-    def __init__(self, config, variation='sentencepiece/ilmulti-v1'):
-        """
-        """
-        self.tokenizer = {}
+    def inv(self, tokenized_text: str):
+        SPM_SYMBOL = '▁'
+        tokenized_text = tokenized_text.replace(' ', '')
+        tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
+        if not tokenized_text:
+            return ''
+        if tokenized_text[0] == ' ':
+            tokenized_text = tokenized_text[1:]
+        return tokenized_text
 
-        ASSETS_DIR = resolve()
-        self.model_path = os.path.join(ASSETS_DIR, variation)   
+    def map(self, data: str):
+        concat = '\n'.join(data)
+        transformed = self.transform(concat)
+        return transformed.splitlines()
 
-        for lang, units in config.items():
-            self.tokenizer[lang] = SentencePieceTokenizer(self.model_path, lang, units)
+    def inv_map(self, txs: str):
+        return self.inv(txs)
 
-    def __call__(self, text, lang=None):
-        if lang is None:
-            export = detect_lang(text)
-            tokens, langs = [], []
-            for sentence, lang in export:
-                tokenizer = self.get_tokenizer(lang)
-                sentence_tokens = tokenizer(sentence)
-                tokens.extend(sentence_tokens)
-                langs.append(lang)
-
-            lang, *_ = Counter(langs).most_common(1)
-            return (lang, tokens)
-
-        tokenizer = self.get_tokenizer(lang)
-        tokens = tokenizer(text)
-        return (lang, tokens)
-
-    def single_dictionary(self, src_lang, tgt_lang):
-        from fairseq.data.dictionary import Dictionary
-        dictionary = Dictionary()
-        vocab = set()
-
-        # Control tokens
-        tgt_lang_token = language_token(tgt_lang)
-        vocab.add(tgt_lang_token)
-
-        tokenizer_vocab = self.tokenizer[src_lang].vocab
-        vocab = vocab.union(tokenizer_vocab)
-        vocab = sorted(list(vocab))
-
-        for word in vocab:
-            dictionary.add_symbol(word)
-
-        return dictionary
+    def dictionary_fairseq(self):
+        return fairseq_dictionary_from_vocab(self.vocab)
 
 
-    def dictionary(self):
-        from fairseq.data.dictionary import Dictionary
-        dictionary = Dictionary()
+class MultiSentencePieceTokenizer(MultiFunctor, InvertibleFunctor):
+    Functor = SentencePieceTokenizer
 
-        vocab = set()
-
+    @property
+    def vocab(self):
+        vocab_ = set()
         # Add language_tokens
-        langs, _ = list(zip(*self.tokenizer.keys()))
+        langs, _ = list(zip(*self.functorDict.keys()))
         langs = list(map(language_token, langs))
-        vocab = vocab.union(set(langs))
+        vocab_ = vocab_.union(set(langs))
 
         for key in self.tokenizer:
-            tokenizer_vocab = self.tokenizer[key].vocab
-            vocab = vocab.union(tokenizer_vocab)
+            tokenizer_vocab_ = self.functorDict[key].vocab
+            vocab_ = vocab_.union(tokenizer_vocab_)
 
         # Sorting is critical; 
-        vocab = sorted(list(vocab))
-        for word in vocab:
+        vocab_ = sorted(list(vocab_))
+        return vocab_
+
+    def dictionary_fairseq(self):
+        return fairseq_dictionary_from_vocab(vocab)
+
+
+def fairseq_dictionary_from_vocab(vocab):
+        from fairseq.data.dictionary import Dictionary
+        dictionary = Dictionary()
+        for word in self.vocab:
             dictionary.add_symbol(word)
-
-
         return dictionary
-
-    def get_tokenizer(self, lang):
-        if lang not in self.tokenizer:
-            raise KeyError("Tokenizer not enabled with {}".format(lang))
-        return self.tokenizer.get(lang)
-
-    def detokenize(self, value):
-        SPM_SYMBOL = '▁'
-        value = value.replace(' ', '')
-        value = value.replace(SPM_SYMBOL, ' ')
-        if not value:
-            return ''
-        if value[0] == ' ':
-            value = value[1:]
-        return value

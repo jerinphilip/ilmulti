@@ -33,7 +33,9 @@ extensions = [
     'recommonmark',
     # 'sphinx.ext.viewcode',
     'sphinxarg.ext',
-    'sphinx.ext.linkcode'
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.inheritance_diagram',
 ]
 
 source_suffix = {
@@ -91,4 +93,14 @@ def linkcode_resolve(domain, info):
     commit = ilmulti.git_short()
     repository = 'shashanksiripragada/ilmulti-dev'
     return "https://github.com/%s/blob/%s/%s" % (repository, commit, filename)
+
+
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'alphabetical', # 'bysource',
+    # 'special-members': '__call__',
+    'show-inheritance': True,
+    'undoc-members': True,
+    'inherited-members': True,
+}
 

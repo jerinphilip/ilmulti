@@ -4,7 +4,7 @@ from .translate import create_parser, translate_main
 from ..utils.env_utils import resolve
 
 def test_translate_cmdline():
-    for model in ['mm-all-iter1']:
+    for model in ['m2m1']:
         parser = create_parser()
         for lang in ['en', 'hi', 'bn', 'ml', 'ta']:
             argv = []

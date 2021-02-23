@@ -1,23 +1,24 @@
 import os
 import nltk
-import warnings
-from ..utils import detect_lang
+from typing import Sequence, List
 from nltk.tokenize.punkt import PunktLanguageVars
+
 from ..utils.env_utils import resolve
+from ..utils.functional import ForwardFunctor, MultiFunctor, ConfigBuildable
 
-# @jerin: Danda and Double Danda lol.
-DEVANAGIRI = '\u0964\u0965'
-ARABIC_FULL_STOP = '\u06D4'
 
-delimiters = {
-    'hi': DEVANAGIRI,
-    'bn': DEVANAGIRI,
-    'or': DEVANAGIRI,
-    'pa': DEVANAGIRI,
-    'ur': ARABIC_FULL_STOP
-}
+def PunktDelimiter(lang: str):
+    DEVANAGIRI = '\u0964\u0965'
+    ARABIC_FULL_STOP = '\u06D4'
 
-def PunktDelimiter(lang):
+    delimiters = {
+        'hi': DEVANAGIRI,
+        'bn': DEVANAGIRI,
+        'or': DEVANAGIRI,
+        'pa': DEVANAGIRI,
+        'ur': ARABIC_FULL_STOP
+    }
+
     # The symbols are obtainable here.
     # https://apps.timwhitlock.info/unicode/inspect?
 
@@ -35,59 +36,27 @@ def PunktDelimiter(lang):
     return cls
 
 
-class PunktSplitter:
-    def __init__(self, path, lang):
+class PunktSplitter(ForwardFunctor, ConfigBuildable):
+    def __init__(self, path: str, lang: str):
         self.path = path
         self.lang = lang
-        self.model = self.load_model()
 
-    def load_model(self):
         # Critical bit: This is where the model loading happens.
         nltk_uri = 'file:{}'.format(self.path)
-        model = nltk.data.load(nltk_uri)
+        self.model = nltk.data.load(nltk_uri)
         lang_vars = PunktDelimiter(self.lang)()
-        model._lang_vars = lang_vars
-        return model
+        self.model._lang_vars = lang_vars
 
-    def __call__(self, content):
+    def transform(self, content: str) -> List[str]:
         return self.model.tokenize(content)
 
+    @classmethod
+    def fromConfig(cls, config):
+        return cls(config['path'], config['lang'])
 
-class MultiPunktSplitter:
-    def __init__(self, variation='punkt/pib'):
-        self._splitter = {}
-        ASSETS_DIR = resolve()
-        self.data_dir = os.path.join(ASSETS_DIR, variation)   
-        self.langs = [
-            'en', 'hi', 'bn', 'ml', 
-            'ur', 'mr', 'gu', 'te',
-            'ta', 'pa', 'or'
-        ]
 
-        self.default = 'en'
-        self._loaded = {}
-
-    def _lazy_load_or_default(self, lang):
-        if lang not in self.langs:
-            lang = self.default
-
-        if lang not in self._loaded:
-            path  = os.path.join(self.data_dir, '{}.pickle'.format(lang))
-            self._loaded[lang] = PunktSplitter(path , lang)
-
-        return self._loaded[lang]
-
-    def __call__(self, content, lang=None):
-        _, _lang= detect_lang(content)[0]
-        if lang is None:
-            lang = _lang
-
-        elif _lang != lang:
-            warnings.warn("Language mismatch on text, please sanitize.")
-            warnings.warn("Ignore if you know what you're doing")
-
-        splitter = self._lazy_load_or_default(lang)
-        return (_lang, splitter(content))
+class MultiPunktSplitter(MultiFunctor):
+    Functor = PunktSplitter
 
 def inspect_tokenizer(tokenizer):
     param_keys = ['abbrev_types', 'collocations', 'sent_starters']

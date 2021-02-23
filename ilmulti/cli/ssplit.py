@@ -14,7 +14,7 @@ def create_parser():
 def ssplit_main(args, blob):
     from ..ssplit import build_splitter
     splitter = build_splitter(args.type)
-    lang, sentences = splitter(blob, lang=args.lang)
+    sentences = splitter(blob, lang=args.lang)
     if args.output is None:
         output_file = sys.stdout
     else:

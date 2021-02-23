@@ -19,7 +19,7 @@ def tokenize_main(args, lines):
     else:
         output_file = open(args.output, 'w')
     for line in lines:
-        lang, tokenized = tokenizer(line, lang=args.lang)
+        tokenized = tokenizer(line, lang=args.lang)
         print(tokenized, file=output_file)
 
 

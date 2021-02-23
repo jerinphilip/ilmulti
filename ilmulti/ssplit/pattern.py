@@ -1,10 +1,15 @@
 import re
 import warnings
 from ..utils import detect_lang
+from ..utils.functional import ForwardFunctor, MultiFunctor, ConfigBuildable
 
-class PatternSplitter:
+class PatternSplitter(ForwardFunctor, ConfigBuildable):
     def __init__(self, pattern):
         self.pattern = re.compile(pattern)
+
+    @classmethod
+    def fromConfig(cls, config):
+        return cls(config['pattern'])
 
     def paragraph_sentence(self, paragraph):  
         paragraph = re.sub(r'[.]+', '.', paragraph)
@@ -19,7 +24,7 @@ class PatternSplitter:
             cleaned.append(_cleaned)
         return cleaned
 
-    def __call__(self, paragraph):
+    def transform(self, paragraph):
         "returns sentences"
         paragraphs = paragraph.splitlines()
         cleaned = []
@@ -29,32 +34,6 @@ class PatternSplitter:
         return cleaned
 
 
-class MultiPatternSplitter:
-    def __init__(self):
-        self._splitter = {}
-        patterns = {
-            "en": "([.;!?…])",
-            "ur": "([.;!?…])",
-            "hi": "([।;!?…|I])",
-            "bn": "([।.;!?…|I])",
-            "or": "([।.;!?…|I])",
-            "default": "([.;!?…])"
+class MultiPatternSplitter(MultiFunctor, ConfigBuildable):
+    Functor = PatternSplitter
 
-        }
-        for lang in patterns:
-            pattern = patterns[lang]
-            self._splitter[lang] = PatternSplitter(pattern)
-
-    def __call__(self, paragraph, lang=None):
-        _, _lang= detect_lang(paragraph)[0]
-        if lang is None:
-            lang = _lang
-
-        if _lang != lang:
-            warnings.warn("Language mismatch on text, please sanitize.")
-            warnings.warn("Ignore if you know what you're doing")
-            # warnings.warn(paragraph)
-
-        default = self._splitter["default"]
-        splitter = self._splitter.get(lang, default)
-        return (_lang, splitter(paragraph))

@@ -11,8 +11,4 @@ tags, ensuring the components constructed are compatible with each other.
 
 .. automodule:: ilmulti.builder
 .. autoclass:: ilmulti.builder.Config
-    :members:
-    :undoc-members:
 .. autoclass:: ilmulti.builder.Builder
-    :undoc-members:
-    :members:
