@@ -11,7 +11,7 @@ class PatternSplitter(ForwardFunctor, ConfigBuildable):
     def fromConfig(cls, config):
         return cls(config['pattern'])
 
-    def paragraph_sentence(self, paragraph):  
+    def _paragraph_sentence(self, paragraph):  
         paragraph = re.sub(r'[.]+', '.', paragraph)
         sentences = self.pattern.split(paragraph)
         cleaned = []
@@ -29,7 +29,7 @@ class PatternSplitter(ForwardFunctor, ConfigBuildable):
         paragraphs = paragraph.splitlines()
         cleaned = []
         for paragraph in paragraphs:
-            _cleaned = self.paragraph_sentence(paragraph)
+            _cleaned = self._paragraph_sentence(paragraph)
             cleaned.extend(_cleaned)
         return cleaned
 

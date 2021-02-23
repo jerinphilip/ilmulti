@@ -6,7 +6,7 @@ import sys
 def create_parser():
     parser = ArgumentParser(description='Extract sentences from a blob of text')
     parser.add_argument('--type', choices=['simple', 'pattern', 'punkt.pib'], help='Type of splitter to use', required=True)
-    parser.add_argument('--lang', default=None, help='Language of the input-blob of text if known')
+    parser.add_argument('--lang', required=True, help='Language of the input-blob of text if known')
     parser.add_argument('--input', default=None, help='Path to input file')
     parser.add_argument('--output', default=None, help='Path to output file')
     return parser

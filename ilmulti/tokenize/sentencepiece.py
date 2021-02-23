@@ -6,6 +6,17 @@ from collections import Counter
 from ..utils.language_utils import language_token, detect_lang
 from ..utils.functional import InvertibleFunctor, MultiFunctor, ConfigBuildable
 
+def _detokenize(tokenized_text):
+    SPM_SYMBOL = '▁'
+    tokenized_text = tokenized_text.replace(' ', '')
+    tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
+    if not tokenized_text:
+        return ''
+    if tokenized_text[0] == ' ':
+        tokenized_text = tokenized_text[1:]
+    return tokenized_text
+
+
 class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
     def __init__(self, path, lang, units):
         self.path = path
@@ -35,27 +46,13 @@ class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
 
     def transform(self, text: str):
         tokens = self.model.EncodeAsPieces(text)
-        clean = lambda x: x in self.vocab
+        clean = lambda x: x in self.vocab 
         tokens = list(filter(clean, tokens))
         return ' '.join(tokens)
 
     def inv(self, tokenized_text: str):
-        SPM_SYMBOL = '▁'
-        tokenized_text = tokenized_text.replace(' ', '')
-        tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
-        if not tokenized_text:
-            return ''
-        if tokenized_text[0] == ' ':
-            tokenized_text = tokenized_text[1:]
-        return tokenized_text
+        return _detokenize(tokenized_text)
 
-    def map(self, data: str):
-        concat = '\n'.join(data)
-        transformed = self.transform(concat)
-        return transformed.splitlines()
-
-    def inv_map(self, txs: str):
-        return self.inv(txs)
 
     def dictionary_fairseq(self):
         return fairseq_dictionary_from_vocab(self.vocab)
@@ -82,6 +79,9 @@ class MultiSentencePieceTokenizer(MultiFunctor, InvertibleFunctor):
 
     def dictionary_fairseq(self):
         return fairseq_dictionary_from_vocab(vocab)
+
+    def inv(self, datum):
+        return _detokenize(datum)
 
 
 def fairseq_dictionary_from_vocab(vocab):

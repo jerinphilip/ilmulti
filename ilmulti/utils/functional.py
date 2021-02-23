@@ -52,3 +52,6 @@ class MultiFunctor(ConfigBuildable, ForwardFunctor):
 
     def transform(self, datum, lang):
         return self.functorDict[lang].transform(datum)
+
+    def map(self, data, lang):
+        return self.functorDict[lang].map(data)

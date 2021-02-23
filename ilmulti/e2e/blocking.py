@@ -1,4 +1,5 @@
 from ..utils.language_utils import inject_token
+from ..utils.language_utils import detect_lang
 
 class BlockingTranslator:
     """
@@ -14,14 +15,12 @@ class BlockingTranslator:
         Uses splitter -> tokenizer -> translator and lays out the
         interaction.
         """
-        lang, lines = self.splitter(source, lang=src_lang)
-        sources = []
-        for line in lines:
-            lang, tokens = self.tokenizer(line, lang=src_lang)
-            tokenized_lines = ' '.join(tokens)
-            sources.append(tokenized_lines)
+        if src_lang is None:
+            _, src_lang = detect_lang(source)[0]
 
-        with_target_token = inject_token(sources, tgt_lang=tgt_lang)
+        lines = self.splitter(source, lang=src_lang)
+        tokenized = self.tokenizer.map(lines, lang=src_lang)
+        with_target_token = inject_token(tokenized, tgt_lang=tgt_lang)
         export = self.translator(with_target_token)
         export = self._handle_empty_lines_noise(export)
         if detokenize:
@@ -41,7 +40,7 @@ class BlockingTranslator:
         _exports = []
         for entry in export:
             for key in ['src', 'tgt']:
-                entry[key] = self.tokenizer.detokenize(entry[key])
+                entry[key] = self.tokenizer.inv(entry[key])
             entry['src'] = entry['src'][9:]
             _exports.append(entry)
         return _exports
