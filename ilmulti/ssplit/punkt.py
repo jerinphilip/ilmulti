@@ -4,7 +4,7 @@ from typing import Sequence, List
 from nltk.tokenize.punkt import PunktLanguageVars
 
 from ..utils.env_utils import resolve
-from ..utils.functional import ForwardFunctor, MultiFunctor, ConfigBuildable
+from ..meta import ForwardFunctor, MultiFunctor, ConfigBuildable
 
 
 def PunktDelimiter(lang: str):

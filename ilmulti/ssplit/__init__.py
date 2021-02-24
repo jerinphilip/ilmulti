@@ -1,13 +1,13 @@
 
 from .pattern import PatternSplitter, MultiPatternSplitter
-from .simple import SimpleSplitter
+from .simple import SimpleSplitter, MultiSimpleSplitter
 from .punkt import PunktSplitter, MultiPunktSplitter
 from ..utils.env_utils import resolve
 import os
 
 def build_splitter(tag='pattern'):
     if tag == 'simple':
-        return SimpleSplitter()
+        return MultiSimpleSplitter()
     if tag == 'pattern':
         config = {
             "en": {'pattern': "([.;!?…])"},

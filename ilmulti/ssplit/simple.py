@@ -1,20 +1,16 @@
 from ..utils import detect_lang
 import warnings
+from ..meta import ForwardFunctor, PseudoMultiFunctor
+from typing import List
 
-class SimpleSplitter:
-    def __init__(self):
-        pass
+class SimpleSplitter(ForwardFunctor):
+    def __init__(*args, **kwargs):
+        return
 
-    def __call__(self, paragraph, lang=None):
-        _, _lang = detect_lang(paragraph)[0]
-        if lang is None:
-            lang = _lang
-
-        elif _lang != lang:
-            warnings.warn("Language mismatch on text, please sanitize.")
-            warnings.warn("Ignore if you know what you're doing")
-
-        lines = paragraph.splitlines()
-        return (lang, lines)
+    def transform(self, text:str) -> List[str]:
+        lines = text.splitlines()
+        return lines
 
 
+class MultiSimpleSplitter(PseudoMultiFunctor):
+    Functor = SimpleSplitter

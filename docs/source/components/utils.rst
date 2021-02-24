@@ -5,7 +5,6 @@ Utilities
 
 Language
 --------
-.. automodule:: ilmulti.utils.language_utils
 .. autofunction:: ilmulti.utils.language_utils.canonicalize
 
 Language Detection

@@ -1,4 +1,4 @@
-Builders
+Registry
 ========
 
 While components provide an API to contruct the individual components, not all
@@ -9,6 +9,5 @@ model due to a breaking change.
 To prevent this, the library provides methods to build systems on the basis of
 tags, ensuring the components constructed are compatible with each other.
 
-.. automodule:: ilmulti.builder
-.. autoclass:: ilmulti.builder.Config
-.. autoclass:: ilmulti.builder.Builder
+.. automodule:: ilmulti.registry
+    :members: REGISTRY

@@ -4,7 +4,7 @@ from sentencepiece import SentencePieceProcessor
 from collections import Counter
 
 from ..utils.language_utils import language_token, detect_lang
-from ..utils.functional import InvertibleFunctor, MultiFunctor, ConfigBuildable
+from ..meta import InvertibleFunctor, MultiFunctor, ConfigBuildable
 
 def _detokenize(tokenized_text):
     SPM_SYMBOL = '▁'

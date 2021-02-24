@@ -2,11 +2,13 @@ API (unstable)
 ==============
 
 ..  toctree::
+    filters
     segmenters
     tokenizers
     translation
     aligners
     utils
-    builders
+    registry
     packaged-system
+    meta
 

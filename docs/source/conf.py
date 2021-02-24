@@ -101,6 +101,10 @@ autodoc_default_options = {
     # 'special-members': '__call__',
     'show-inheritance': True,
     'undoc-members': True,
-    'inherited-members': True,
+    # 'inherited-members': True,
 }
+
+# https://stackoverflow.com/a/29805688/4565794
+add_module_names = False
+
 

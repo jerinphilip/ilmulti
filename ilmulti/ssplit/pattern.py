@@ -1,7 +1,8 @@
 import re
 import warnings
 from ..utils import detect_lang
-from ..utils.functional import ForwardFunctor, MultiFunctor, ConfigBuildable
+from ..meta import ForwardFunctor, MultiFunctor, ConfigBuildable
+from typing import List
 
 class PatternSplitter(ForwardFunctor, ConfigBuildable):
     def __init__(self, pattern):
@@ -24,9 +25,8 @@ class PatternSplitter(ForwardFunctor, ConfigBuildable):
             cleaned.append(_cleaned)
         return cleaned
 
-    def transform(self, paragraph):
-        "returns sentences"
-        paragraphs = paragraph.splitlines()
+    def transform(self, text:str) -> List[str]:
+        paragraphs = text.splitlines()
         cleaned = []
         for paragraph in paragraphs:
             _cleaned = self._paragraph_sentence(paragraph)
