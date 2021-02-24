@@ -6,11 +6,12 @@ class ConfigBuildable(ABC):
     def fromConfig(cls, config):
         return
 
+    @classmethod
     def validateConfig(cls, config):
-        return
+        return True
 
     @classmethod
     def build(cls, config):
-        self.validateConfig(config)
+        assert cls.validateConfig(config)
         return cls.fromConfig(config)
 

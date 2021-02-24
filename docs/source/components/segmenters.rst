@@ -19,6 +19,7 @@ Naive
 ^^^^^
 
 .. autoclass:: ilmulti.ssplit.SimpleSplitter
+.. autoclass:: ilmulti.ssplit.MultiSimpleSplitter
 
 Regular Expression Based
 ^^^^^^^^^^^^^^^^^^^^^^^^

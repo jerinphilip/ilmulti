@@ -1,73 +1,38 @@
 from io import StringIO
 from bleualign.align import Aligner
 from ilmulti.utils.language_utils import inject_token
+from typing import IO, Union, List, Tuple
+from ..utils.types import Lang
 
-class BLEUAligner:
-    def __init__(self, model, tokenizer, splitter):
-        self.model = model
-        self.tokenizer = tokenizer
-        self.splitter = splitter
-
-    def __call__(self, src, src_lang, tgt, tgt_lang, galechurch=False, detokenize=True):
-        """
-            Input: Paragraphs in two languages and their language codes.
-            Output: Obtained parallel sentences using BLEUAlign
+class BLEUAlign:
+    @staticmethod
+    def withFiles(src: IO[str], tgt: IO[str], s2t : IO[str] = None, 
+            t2s: IO[str] = None) -> Tuple[List[str], List[str]] :
 
         """
-        def create_stringio(lines, lang):
-            tokenized = [ ' '.join(self.tokenizer(line, lang=lang)[1]) \
-                    for line in lines ]
-            lstring = '\n'.join(tokenized)
-            return tokenized, StringIO(lstring)
+        Internally calls ``bleualign.align``, but allows an API to work directly
+        with IO objects. Providing no translations (source to target or target
+        to source) leads to Gale Church algorithm.
 
-        def process(content, lang):
-            lang, sentences = self.splitter(content, lang=lang)
-            missing_idxs = []
-            for idx, sentence in enumerate(sentences):
-                if not sentence.strip():
-                    missing_idxs.append(idx)
+        :param src: IO object containing source, split in lines.
+        :param tgt: IO object containing target, split in lines.
+        :param s2t: IO object containing source to target translation, split in lines.
+        :param t2s: IO object containing target to source translation, split in lines.
 
-            tokenized, _io = create_stringio(sentences, lang)
-            return tokenized, _io, missing_idxs
-
-        src_tokenized, src_io, missing_idxs = process(src, src_lang)
-        tgt_tokenized, tgt_io, _ = process(tgt, tgt_lang)
-
-        if galechurch==True:
-            src, tgt = self.bleu_align(src_io, tgt_io, hyp_src_tgt_file=None)
-            return ([], []) , (src, tgt)
-
-        # Inject tokens into src_tokenized
-        injected_src_tokenized = inject_token(src_tokenized, tgt_lang)
-
-        generation_output = self.model(injected_src_tokenized)
-        hyps = [ gout['tgt'] for gout in generation_output ]
-
-        # Remove missing idxs.
-        for idx in missing_idxs:
-            hyps[idx] = ''
-
-        hyp_io = StringIO('\n'.join(hyps))
-
-        src_tokenized, tgt_tokenized = self.bleu_align(src_io, tgt_io, hyp_io)
-        src = [self.tokenizer.detokenize(s) for s in src_tokenized]
-        tgt = [self.tokenizer.detokenize(s) for s in tgt_tokenized]
-
-        return (src_tokenized, hyps), (src, tgt) 
-
-
-
-    def bleu_align(self, srcfile, tgtfile, hyp_src_tgt_file=None):
+        :return: tuple containing source-lines and target-lines, which are
+                 aligned at each index. These needn't correspond to supplied source or
+                 target lines (merges of lines can happen).
+        """
         output = StringIO()
         options = {
-            'srcfile': srcfile,
-            'targetfile': tgtfile,
-            'galechurch' : True if hyp_src_tgt_file is None else False,
-            'no_translation_override':True if hyp_src_tgt_file is None else False,
-            'srctotarget': [hyp_src_tgt_file] if hyp_src_tgt_file else [],
-            'targettosrc': [],
+            'srcfile': src,
+            'targetfile': tgt,
+            'galechurch' : True if s2t is None and t2s is None else False,
+            'no_translation_override': True if s2t is None else False,
+            'srctotarget': [s2t] if s2t else [],
+            'targettosrc': [t2s] if t2s else [],
             'verbosity' : 0,
-	   }
+           }
 
         a = Aligner(options)
         a.mainloop()
@@ -75,59 +40,81 @@ class BLEUAligner:
 
         srcs = src_out.getvalue().splitlines()
         tgts = tgt_out.getvalue().splitlines()
+        return srcs, tgts
+
+    @staticmethod
+    def withString(src: str, tgt: str, s2t:str = None, t2s: str = None):
+        """
+        Characteristics same as :meth:`withFiles`, handles conversion of
+        string arguments to IO objects internally to return the processed result.
+        """
+        src_io = StringIO(src)
+        tgt_io = StringIO(tgt)
+
+        maybeStringIO = lambda x: StringIO(x) if x is not None else None
+        s2t_io = maybeStringIO(s2t)
+        t2s_io = maybeStringIO(tgt_to_src)
+
+        return BLEUAlign.withFiles(src_io, tgt_io, s2t_io, t2s_io);
+
+class BLEUAligner:
+    def __init__(self, model=None, tokenizer=None, splitter=None):
+        if (model is None and tokenizer is None and splitter is None):
+            raise RunTimeError("You seem to have called BLEUAligner without any of model, "
+                               "tokenizer or splitter provided. It is suitable to use the functional"
+                               "version BLEUAlign in these cases.")
+        self.model = model
+        self.tokenizer = tokenizer
+        self.splitter = splitter
+
+    def _preprocess(self, text: str, lang: str) -> str:
+        # If splitter available, split using splitter.
+        if splitter is not None:
+            text = self.splitter(text, lang=lang)
+        else:
+            text = text.splitlines()
+
+        # If tokenizer available run one round of tokenizer
+        if self.tokenizer is not None:
+            text = self.tokenizer.map(texts)
+
+        return '\n'.join(text)
+
+    def _postprocess(self, texts: List[str], lang: Lang) -> List[str]:
+        # TODO(jerinphilip): Embeddable SentenceSplitters.
+        if self.tokenizer is not None:
+            texts = self.tokenizer.inv_map(texts, lang=lang)
+        return texts
+
+
+    def align_blob(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang, 
+            s2t: str, t2s: str=None) -> Tuple[List[str], List[str]]:
+        src = self._preprocess(src, src_lang)
+        tgt = self._preprocess(src, tgt_lang)
+
+        srcs, tgts = BLEUAlign.withString(src, tgt, s2t=s2t);
+
+        srcs = self._postprocess(srcs, src_lang)
+        tgts = self._postprocess(tgts, src_lang)
 
         return srcs, tgts
 
-    def bleu_align_from_raw(self, src_content, tgt_content, src_to_tgt_content=None, preprocess=False, src_lang=None, tgt_lang=None):
-        """
-        Wrapper for easier access.
-        """
+    # TODO(jerinphilip) It maybe possible to optimize the process by using the
+    # model's splitting and tokenizing mechanisms.
+    def translate_align_blob(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
+        src, s2t = self._process_translation_result(self.model(src, tgt_lang=tgt_lang))
+        return self.align_blob(src, tgt, src_lang, tgt_lang, s2t);
 
-        def preprocess_fn(content, lang):
-            _lang, sentences = self.splitter(content, lang)
-            tokenized_sentences = []
-            for sentence in sentences:
-                _lang, tokenized_sentence = self.tokenizer(sentence, lang)
-                joined = ' '.join(tokenized_sentence)
-                tokenized_sentences.append(joined)
-            return '\n'.join(tokenized_sentences)
+    def translate_align_bidirectional(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
+        src, s2t = self._process_translation_result( self.model(src, tgt_lang=tgt_lang))
+        tgt, t2s = self._process_translation_result(self.model(tgt, tgt_lang=src_lang))
+        return self.align_blob(src, tgt, src_lang, tgt_lang, s2t=s2t, t2s=t2s);
+
+    def _process_translation_result(self, result):
+        srcs = [entry['src'] for entry in result]
+        s2ts = [entry['tgt'] for entry in result]
+        return ('\n'.join(srcs), '\n'.join(s2ts))
 
 
 
-        if preprocess:
-            src_content = preprocess_fn(src_content, src_lang)
-            tgt_content = preprocess_fn(tgt_content, tgt_lang)
-            if src_to_tgt_content:
-                src_to_tgt_content = preprocess_fn(src_to_tgt_content, tgt_lang)
 
-        srcfile = StringIO(src_content)
-        tgtfile = StringIO(tgt_content)
-        if src_to_tgt_content:
-            src_to_tgt_content = StringIO(src_to_tgt_content)
-        return self.bleu_align(srcfile, tgtfile, src_to_tgt_content)
-
-    def postprocess(self, srcs, tgts, src_lang, tgt_lang):
-        def output_render(lines):
-            detok = lambda x: self.tokenizer.detokenize(x)
-            lines = list(map(detok, lines))
-            return lines
-
-        srcs = output_render(srcs)
-        tgts = output_render(tgts)
-
-        postprocd_srcs = []
-        postprocd_tgts = []
-
-        for src, tgt in zip(srcs, tgts):
-            _, src_sentences = self.splitter(src, src_lang)
-            _, tgt_sentences = self.splitter(tgt, tgt_lang)
-            if len(src_sentences) == len(tgt_sentences):
-                postprocd_srcs.extend(src_sentences)
-                postprocd_tgts.extend(tgt_sentences)
-            else:
-                postprocd_srcs.append(src)
-                postprocd_tgts.append(tgt)
-
-        postprocd_src = '\n'.join(postprocd_srcs)
-        postprocd_tgt = '\n'.join(postprocd_tgts)
-        return postprocd_src, postprocd_tgt
