@@ -1,15 +1,11 @@
 
-from functools import partial
+from functools import partial, wraps
 from collections import defaultdict
 from ..meta import ConfigBuildable
 
 REGISTRY = defaultdict(dict)
 
 def register(tag: str, cls: ConfigBuildable, _type: str):
-    """
-    To be used as a decorator for a generating function, which generates configs.
-    configs are dictionaries.
-    """
     def populator(generatingFunction):
         if tag in REGISTRY[_type]:
             raise ValueError("tag {} already exists for Type {}".format(tag, _type))
@@ -45,7 +41,6 @@ def build(_type: str, tag: str):
 
     """
 
-    print("Build called with: ", _type, tag, REGISTRY[_type][tag])
     f = REGISTRY[_type][tag]
     return f()
 
@@ -53,3 +48,4 @@ def build(_type: str, tag: str):
 from .splitters import *
 from .tokenizers import *
 from .translators import *
+
