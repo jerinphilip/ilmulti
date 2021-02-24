@@ -11,36 +11,16 @@ def register(tag: str, cls: ConfigBuildable, _type: str):
     configs are dictionaries.
     """
     def populator(generatingFunction):
+        if tag in REGISTRY[_type]:
+            raise ValueError("tag {} already exists for Type {}".format(tag, _type))
         REGISTRY[_type][tag] = lambda: cls.fromConfig(generatingFunction())
     return populator
 
 
 register_splitter =  partial(register, _type='splitter')
-"""
-specialization of register to register splitters
-usage
-
-.. code-block::
-
-  @register_splitter('punkt/pib')
-  def _punkt_pib_generating_function():
-     ....
-
-"""
-
 register_tokenizer = partial(register, _type='tokenizer')
-"""
-specialization of register to register tokenizers
-usage
-
-.. code-block::
-
-  @register_tokenizer('sentencepiece/ilmulti-v1')
-  def _v1config_generating_function():
-     ....
-
-"""
 register_translator = partial(register, _type='translator')
+register_e2e_translator = partial(register, _type='e2e_translator')
 
 def registry() -> str:
     """
@@ -65,8 +45,11 @@ def build(_type: str, tag: str):
 
     """
 
+    print("Build called with: ", _type, tag, REGISTRY[_type][tag])
     f = REGISTRY[_type][tag]
     return f()
 
 
 from .splitters import *
+from .tokenizers import *
+from .translators import *

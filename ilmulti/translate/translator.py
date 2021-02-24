@@ -21,12 +21,12 @@ except ImportError:
     exit()
 
 from .args import Args
-from ..utils import ILMULTI_DIR
+from ..meta import ConfigBuildable
 
 Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
 Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
 
-class FairseqTranslator:
+class FairseqTranslator(ConfigBuildable):
     def __init__(self, args, use_cuda=False):
         # In here, we wrap around facebook's translator.
         self.args = args
@@ -143,34 +143,27 @@ class FairseqTranslator:
                 src_tokens=batch['net_input']['src_tokens'], src_lengths=batch['net_input']['src_lengths'],
             ), batch['id']
 
+    @classmethod
+    def fromConfig(cls, config):
+        model_path = config['path']
+        data = os.path.dirname(model_path)
+        if not os.path.exists(model_path):
+            raise Exception(
+                "The model does not seem downloaded."
+                "Please use scripts/download-and-setup.sh before running this code."
+            )
 
 
-def build_translator(model, use_cuda=False):
-    from ..utils.env_utils import resolve
-    ASSETS_DIR = resolve()
-    model_path = os.path.join(ASSETS_DIR, 'translation', model)
-    data = os.path.dirname(model_path)
-    print(data)
-    if not os.path.exists(model_path):
-        raise Exception(
-            "The model does not seem downloaded."
-            "Please use scripts/download-and-setup.sh before running this code."
-        )
+        args = Args(**config)
 
-    args = Args(
-        path=model_path, max_tokens=96000, task='translation',
-        source_lang='src', target_lang='tgt', buffer_size=2,
-        data=data
-    )
+        import fairseq
+        parser = fairseq.options.get_generation_parser(interactive=True)
+        default_args = fairseq.options.parse_args_and_arch(parser, input_args=['dummy-data'])
+        keyword_arguments = dict(default_args._get_kwargs())
+        args.enhance(print_alignment=True)
+        args.enhance(**keyword_arguments)
 
-    import fairseq
-    parser = fairseq.options.get_generation_parser(interactive=True)
-    default_args = fairseq.options.parse_args_and_arch(parser, input_args=['dummy-data'])
-    keyword_arguments = dict(default_args._get_kwargs())
-    args.enhance(print_alignment=True)
-    args.enhance(**keyword_arguments)
-
-    fseq_translator = FairseqTranslator(args, use_cuda=use_cuda)
-    return fseq_translator
-
+        use_cuda = True if 'FSEQ_USE_CUDA' in os.environ else False
+        fseq_translator = cls(args, use_cuda=use_cuda)
+        return fseq_translator
 

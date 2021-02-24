@@ -53,46 +53,73 @@ class BLEUAlign:
 
         maybeStringIO = lambda x: StringIO(x) if x is not None else None
         s2t_io = maybeStringIO(s2t)
-        t2s_io = maybeStringIO(tgt_to_src)
+        t2s_io = maybeStringIO(t2s)
 
         return BLEUAlign.withFiles(src_io, tgt_io, s2t_io, t2s_io);
 
 class BLEUAligner:
-    def __init__(self, model=None, tokenizer=None, splitter=None):
-        if (model is None and tokenizer is None and splitter is None):
-            raise RunTimeError("You seem to have called BLEUAligner without any of model, "
+    def __init__(self, e2e_translator=None, tokenizer=None, splitter=None):
+        if (e2e_translator is None and tokenizer is None and splitter is None):
+            raise RunTimeError("You seem to have called BLEUAligner without any of e2e_translator, "
                                "tokenizer or splitter provided. It is suitable to use the functional"
                                "version BLEUAlign in these cases.")
-        self.model = model
+        self.e2e_translator = e2e_translator
         self.tokenizer = tokenizer
         self.splitter = splitter
 
-    def _preprocess(self, text: str, lang: str) -> str:
+    @classmethod
+    def fromE2ETranslator(cls, e2e_translator):
+        """
+        Convenience method to build from end-to-end translator using the translators tokenizer and splitter.
+        """
+        return cls(e2e_translator, e2e_translator.tokenizer, e2e_translator.splitter)
+
+    def _preprocess(self, text: str, lang: str, ssplit:bool) -> str:
         # If splitter available, split using splitter.
-        if splitter is not None:
+        if self.splitter is not None and not ssplit:
             text = self.splitter(text, lang=lang)
         else:
             text = text.splitlines()
 
         # If tokenizer available run one round of tokenizer
         if self.tokenizer is not None:
-            text = self.tokenizer.map(texts)
+            text = self.tokenizer.map(text, lang=lang)
 
         return '\n'.join(text)
 
     def _postprocess(self, texts: List[str], lang: Lang) -> List[str]:
         # TODO(jerinphilip): Embeddable SentenceSplitters.
         if self.tokenizer is not None:
-            texts = self.tokenizer.inv_map(texts, lang=lang)
+            texts = self.tokenizer.inv_map(texts)
         return texts
 
-
-    def align_blob(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang, 
+    
+    def align(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang, 
             s2t: str, t2s: str=None) -> Tuple[List[str], List[str]]:
-        src = self._preprocess(src, src_lang)
-        tgt = self._preprocess(src, tgt_lang)
+        """
+        Given a source text, target text and translated text operates with
+        tokenizer and splitter instantiated with and provides alignments. Note
+        that this function does not use the translation e2e_translator, which is
+        expensive.
 
-        srcs, tgts = BLEUAlign.withString(src, tgt, s2t=s2t);
+        :param src: Source text blob
+        :param tgt: Target text blob.
+        :param s2t: Source to target translation attempt. For best results
+                    splitter used on src should provide one to one correspondence to
+                    lines in s2t.
+        :param t2s: Same as s2t but for target to source, and optional.
+
+        """ 
+        return self._align(src, src_lang, tgt, tgt_lang, s2t, t2s, ssplit_src=False, ssplit_tgt=False)
+
+    def _align(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang, 
+            s2t: str, t2s: str=None, ssplit_src:bool =False, 
+            ssplit_tgt:bool=False) -> Tuple[List[str], List[str]]:
+
+        src = self._preprocess(src, src_lang, ssplit_src) 
+        tgt = self._preprocess(tgt, tgt_lang, ssplit_tgt)
+
+        srcs, tgts = BLEUAlign.withString(src, tgt, s2t=s2t, t2s=t2s);
 
         srcs = self._postprocess(srcs, src_lang)
         tgts = self._postprocess(tgts, src_lang)
@@ -100,15 +127,30 @@ class BLEUAligner:
         return srcs, tgts
 
     # TODO(jerinphilip) It maybe possible to optimize the process by using the
-    # model's splitting and tokenizing mechanisms.
-    def translate_align_blob(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
-        src, s2t = self._process_translation_result(self.model(src, tgt_lang=tgt_lang))
-        return self.align_blob(src, tgt, src_lang, tgt_lang, s2t);
+    # e2e_translator's splitting and tokenizing mechanisms.
+    def align_forward(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
+        """
+        Given a source text, target text and translated text operates with
+        tokenizer and splitter instantiated with and provides alignments. Note
+        that this function does not use the translation e2e_translator, which is
+        expensive.
 
-    def translate_align_bidirectional(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
-        src, s2t = self._process_translation_result( self.model(src, tgt_lang=tgt_lang))
-        tgt, t2s = self._process_translation_result(self.model(tgt, tgt_lang=src_lang))
-        return self.align_blob(src, tgt, src_lang, tgt_lang, s2t=s2t, t2s=t2s);
+        :param src: Source text blob
+        :param src_lang: 
+        :param tgt: Target text blob.
+        :param tgt_lang: 
+
+        """ 
+        src, s2t = self._process_translation_result(self.e2e_translator(src, tgt_lang=tgt_lang, src_lang=src_lang))
+        return self._align(src, src_lang, tgt, tgt_lang, s2t, ssplit_src=True);
+
+    def align_bidirectional(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang):
+        """
+        Same as :meth:`align_forward`, but uses translation in both directions and therefore 2x costly.
+        """
+        src, s2t = self._process_translation_result( self.e2e_translator(src, tgt_lang=tgt_lang))
+        tgt, t2s = self._process_translation_result(self.e2e_translator(tgt, tgt_lang=src_lang))
+        return self._align(src, src_lang, tgt, tgt_lang, s2t=s2t, t2s=t2s, ssplit_src=True, ssplit_tgt=True);
 
     def _process_translation_result(self, result):
         srcs = [entry['src'] for entry in result]

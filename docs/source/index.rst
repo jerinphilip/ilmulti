@@ -6,8 +6,6 @@ an assortment of utilities and wrappers built around several other available
 libraries, adapting for versatile use for training multilingual models for
 Indian languages and harvesting more data.
 
-
-
 Contents
 --------
 .. toctree::

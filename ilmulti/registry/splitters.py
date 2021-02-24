@@ -1,3 +1,4 @@
+import os
 from . import register_splitter
 from ..utils.env_utils import resolve
 from ..ssplit import PatternSplitter, MultiPunktSplitter

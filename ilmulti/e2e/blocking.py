@@ -1,7 +1,8 @@
 from ..utils.language_utils import inject_token
 from ..utils.language_utils import detect_lang
+from ..meta import ConfigBuildable
 
-class BlockingTranslator:
+class BlockingTranslator(ConfigBuildable):
     """
     A blocking translator.
     """
@@ -44,3 +45,14 @@ class BlockingTranslator:
             entry['src'] = entry['src'][9:]
             _exports.append(entry)
         return _exports
+
+    @classmethod
+    def fromConfig(cls, config):
+        from ..registry import build
+        built = {}
+        print(list(config.keys()))
+        for key in config:
+            built[key] = build(key, config[key])
+            print(key, built[key])
+        return cls(**built)
+            

@@ -36,6 +36,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.linkcode',
     'sphinx.ext.inheritance_diagram',
+    'sphinx_autodoc_typehints'
 ]
 
 source_suffix = {
@@ -106,5 +107,6 @@ autodoc_default_options = {
 
 # https://stackoverflow.com/a/29805688/4565794
 add_module_names = False
+# always_document_param_types = True
 
 
