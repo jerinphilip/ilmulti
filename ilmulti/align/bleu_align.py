@@ -27,12 +27,12 @@ class BLEUAlign:
         options = {
             'srcfile': src,
             'targetfile': tgt,
-            'galechurch' : True if s2t is None and t2s is None else False,
+            'galechurch' : True if (s2t is None and t2s) is None else False,
             'no_translation_override': True if s2t is None else False,
             'srctotarget': [s2t] if s2t else [],
             'targettosrc': [t2s] if t2s else [],
             'verbosity' : 0,
-           }
+        }
 
         a = Aligner(options)
         a.mainloop()
@@ -148,7 +148,7 @@ class BLEUAligner:
         """
         Same as :meth:`align_forward`, but uses translation in both directions and therefore 2x costly.
         """
-        src, s2t = self._process_translation_result( self.e2e_translator(src, tgt_lang=tgt_lang))
+        src, s2t = self._process_translation_result(self.e2e_translator(src, tgt_lang=tgt_lang))
         tgt, t2s = self._process_translation_result(self.e2e_translator(tgt, tgt_lang=src_lang))
         return self._align(src, src_lang, tgt, tgt_lang, s2t=s2t, t2s=t2s, ssplit_src=True, ssplit_tgt=True);
 
