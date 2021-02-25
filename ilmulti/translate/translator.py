@@ -7,7 +7,7 @@ try:
     import fairseq
     import torch
     from fairseq.sequence_generator import SequenceGenerator
-    from fairseq import data, options, tasks, tokenizer, utils
+    from fairseq import data, options, tasks, tokenizer, utils, checkpoint_utils
 except ImportError:
     warnings.warn(
     """
@@ -28,32 +28,32 @@ Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
 
 class FairseqTranslator(ConfigBuildable):
     def __init__(self, args, use_cuda=False):
-        # In here, we wrap around facebook's translator.
-        self.args = args
-        self.task = fairseq.tasks.setup_task(args)
-        self.use_cuda = use_cuda
-        # print('| loading model(s) from {}'.format(args.path))
-        model_paths = args.path.split(':')
-        self.models, model_args = fairseq.utils.load_ensemble_for_inference(model_paths, self.task, model_arg_overrides=eval(args.model_overrides))
-        self.tgt_dict = self.task.target_dictionary
+        from ..utils import Capturing
+        with Capturing() as dev_null:
+            self.args = args
+            self.task = fairseq.tasks.setup_task(args)
+            self.use_cuda = use_cuda
+            model_paths = args.path.split(':')
+            self.models, model_args = checkpoint_utils.load_model_ensemble(model_paths, task=self.task, arg_overrides=eval(args.model_overrides))
+            self.tgt_dict = self.task.target_dictionary
 
-        # Optimize ensemble for generation
-        # print(args.print_alignment)
-        for model in self.models:
-            model.make_generation_fast_(
-                beamable_mm_beam_size=None if args.no_beamable_mm else args.beam,
-                need_attn=args.print_alignment,
+            # Optimize ensemble for generation
+            # print(args.print_alignment)
+            for model in self.models:
+                model.make_generation_fast_(
+                    beamable_mm_beam_size=None if args.no_beamable_mm else args.beam,
+                    need_attn=args.print_alignment,
+                )
+                if args.fp16:
+                    model.half()
+                if self.use_cuda:
+                    model.cuda()
+
+            self.max_positions = fairseq.utils.resolve_max_positions(
+                self.task.max_positions(),
+                *[model.max_positions() for model in self.models]
             )
-            if args.fp16:
-                model.half()
-            if self.use_cuda:
-                model.cuda()
-
-        self.max_positions = fairseq.utils.resolve_max_positions(
-            self.task.max_positions(),
-            *[model.max_positions() for model in self.models]
-        )
-        self.generator = self.task.build_generator(args)
+            self.generator = self.task.build_generator(args)
 
 
     def __call__(self, lines, attention=False):

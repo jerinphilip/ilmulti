@@ -50,9 +50,7 @@ class BlockingTranslator(ConfigBuildable):
     def fromConfig(cls, config):
         from ..registry import build
         built = {}
-        print(list(config.keys()))
         for key in config:
             built[key] = build(key, config[key])
-            print(key, built[key])
         return cls(**built)
             
