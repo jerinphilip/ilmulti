@@ -11,7 +11,7 @@ class LengthRatio(Filter):
         self.tokenizer = tokenizer
         self.min_length = min_length
     
-    def condition(self, src_line:str, tgt_line:str):
+    def condition(self, src_line:str, tgt_line:str) -> bool:
         src_tokens = self.tokenizer(src_line, lang=self.src_lang)
         tgt_tokens = self.tokenizer(tgt_line, lang=self.tgt_lang)
         src_len, tgt_len = len(src_tokens), len(tgt_tokens)

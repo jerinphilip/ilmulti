@@ -10,7 +10,7 @@ class LangMatch(Filter):
         self.identifier.set_languages([src_lang, tgt_lang])
         self.threshold = threshold
 
-    def condition(self, src_line: str, tgt_line: str):
+    def condition(self, src_line: str, tgt_line: str) -> bool:
         def check(line, lang_expected):
             lang, prob = self.identifier.classify(line)
             src = (prob >= self.threshold)
