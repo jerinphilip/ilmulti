@@ -6,17 +6,6 @@ from collections import Counter
 from ..utils.language_utils import language_token, detect_lang
 from ..meta import InvertibleFunctor, MultiFunctor, ConfigBuildable
 
-def _detokenize(tokenized_text):
-    SPM_SYMBOL = '▁'
-    tokenized_text = tokenized_text.replace(' ', '')
-    tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
-    if not tokenized_text:
-        return ''
-    if tokenized_text[0] == ' ':
-        tokenized_text = tokenized_text[1:]
-    return tokenized_text
-
-
 class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
     def __init__(self, path, lang, units):
         self.path = path
@@ -90,3 +79,13 @@ def fairseq_dictionary_from_vocab(vocab):
         for word in self.vocab:
             dictionary.add_symbol(word)
         return dictionary
+
+def _detokenize(tokenized_text):
+    SPM_SYMBOL = '▁'
+    tokenized_text = tokenized_text.replace(' ', '')
+    tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
+    if not tokenized_text:
+        return ''
+    if tokenized_text[0] == ' ':
+        tokenized_text = tokenized_text[1:]
+    return tokenized_text

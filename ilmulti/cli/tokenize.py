@@ -19,8 +19,8 @@ def tokenize_main(args, blob):
     else:
         output_file = open(args.output, 'w')
 
-    tokenized = tokenizer.transform(blob, lang=args.lang)
-    print(tokenized, file=output_file)
+    tokenized = tokenizer.map(blob.splitlines(), lang=args.lang)
+    print('\n'.join(tokenized), file=output_file)
 
 
 if __name__ == '__main__':
