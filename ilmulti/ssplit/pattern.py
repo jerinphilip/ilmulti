@@ -10,6 +10,7 @@ class PatternSplitter(ForwardFunctor, ConfigBuildable):
 
     @classmethod
     def fromConfig(cls, config):
+        print(config)
         return cls(config['pattern'])
 
     def _paragraph_sentence(self, paragraph):  

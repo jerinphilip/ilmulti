@@ -1,10 +1,13 @@
 import os
 from . import register_splitter
 from ..utils.env_utils import resolve
-from ..ssplit import PatternSplitter, MultiPunktSplitter
+from ..ssplit import MultiPatternSplitter, MultiPunktSplitter, MultiSimpleSplitter
 
+@register_splitter('simple', MultiSimpleSplitter)
+def __simple():
+    return {}
 
-@register_splitter('pattern', PatternSplitter)
+@register_splitter('pattern', MultiPatternSplitter)
 def __pattern():
     config = {
         "en": {'pattern': "([.;!?…])"},

@@ -4,7 +4,7 @@ from .ssplit import create_parser, ssplit_main
 from ..utils.env_utils import resolve
 
 def test_ssplit_cmdline():
-    for splitter_type in ['simple', 'pattern', 'punkt.pib']:
+    for splitter_type in ['simple', 'pattern', 'punkt/pib']:
         parser = create_parser()
         for lang in ['en', 'hi']:
             argv = []

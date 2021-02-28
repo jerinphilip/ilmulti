@@ -3,9 +3,9 @@ import sys
 from ..registry import build
 
 def create_parser():
-    from ..translate.pretrained import PRETRAINED_CONFIG
+    from ..registry import REGISTRY
     parser = ArgumentParser(description='Translates a blob of text')
-    parser.add_argument('--model', choices=list(PRETRAINED_CONFIG.keys()), help='Model to use in translation', required=True)
+    parser.add_argument('--model', choices=list(REGISTRY['e2e_translator'].keys()), help='Model to use in translation', required=True)
     parser.add_argument('--tgt-lang', required=True, help='Language of the input-blob of text if known')
     parser.add_argument('--input', default=None, help='Path to input file, default is stdin')
     parser.add_argument('--output', default=None, help='Path to output file, default is stdout')
@@ -13,8 +13,6 @@ def create_parser():
     return parser
 
 def translate_main(args, text):
-    from ..translate import from_pretrained, PRETRAINED_CONFIG
-    print(args.model)
     model = build('e2e_translator', args.model)
     translation = model(text, tgt_lang=args.tgt_lang)
     if args.output is None:
