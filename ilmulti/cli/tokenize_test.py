@@ -4,7 +4,7 @@ from .tokenize import create_parser, tokenize_main
 from ..utils.env_utils import resolve
 
 def test_tokenize_cmdline():
-    for tokenizer_type in ['ilmulti-v1']:
+    for tokenizer_type in ['sentencepiece/v1']:
         parser = create_parser()
         for lang in ['en', 'hi']:
             argv = []

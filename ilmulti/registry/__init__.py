@@ -9,7 +9,8 @@ def register(tag: str, cls: ConfigBuildable, _type: str):
     def populator(generatingFunction):
         if tag in REGISTRY[_type]:
             raise ValueError("tag {} already exists for Type {}".format(tag, _type))
-        REGISTRY[_type][tag] = lambda: cls.fromConfig(generatingFunction())
+
+        REGISTRY[_type][tag] = (cls, generatingFunction())
     return populator
 
 
@@ -18,14 +19,18 @@ register_tokenizer = partial(register, _type='tokenizer')
 register_translator = partial(register, _type='translator')
 register_e2e_translator = partial(register, _type='e2e_translator')
 
-def registry() -> str:
+def registry(debug=False) -> str:
     """
     Returns a formatted view of the entries in the global REGISTRY.
     """
     from pprint import pformat
     intermediate = {}
-    for cls in REGISTRY:
-        intermediate[cls] = tuple(REGISTRY[cls].keys())
+    if not debug:
+        for cls in REGISTRY:
+            intermediate[cls] = tuple(REGISTRY[cls].keys())
+    else:
+        for cls in REGISTRY:
+            intermediate[cls] = dict([(tag, REGISTRY[cls][tag]) for tag in REGISTRY[cls]])
     return pformat(intermediate, indent=2)
 
 def build(_type: str, tag: str):
@@ -41,8 +46,8 @@ def build(_type: str, tag: str):
 
     """
 
-    f = REGISTRY[_type][tag]
-    return f()
+    cls, config = REGISTRY[_type][tag]
+    return cls.fromConfig(config)
 
 
 from .splitters import *

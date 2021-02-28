@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import sys
+from ..registry import build
 
 def create_parser():
     from ..translate.pretrained import PRETRAINED_CONFIG
@@ -13,7 +14,8 @@ def create_parser():
 
 def translate_main(args, text):
     from ..translate import from_pretrained, PRETRAINED_CONFIG
-    model = from_pretrained(args.model)
+    print(args.model)
+    model = build('e2e_translator', args.model)
     translation = model(text, tgt_lang=args.tgt_lang)
     if args.output is None:
         output_file = sys.stdout

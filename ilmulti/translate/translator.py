@@ -148,9 +148,9 @@ class FairseqTranslator(ConfigBuildable):
         model_path = config['path']
         data = os.path.dirname(model_path)
         if not os.path.exists(model_path):
-            raise Exception(
-                "The model does not seem downloaded."
-                "Please use scripts/download-and-setup.sh before running this code."
+            raise FileNotFoundError(
+                "The model does not seem downloaded and available at {}."
+                "Please use scripts/download-and-setup.sh before running this code.".format(model_path)
             )
 
 
