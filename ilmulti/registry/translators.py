@@ -29,7 +29,6 @@ cods_comad_config_d = {}
 for _type in ['m2m', 'm2en']:
     for _iter in range(4):
         name, config = cods_comad_config(_type, _iter)
-        print(name, config)
         cods_comad_config_d[name] = deepcopy(config)
         generating_fn = lambda : cods_comad_config_d[name]
         f = register_translator(name, FairseqTranslator)(generating_fn)
