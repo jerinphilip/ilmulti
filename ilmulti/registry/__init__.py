@@ -1,9 +1,10 @@
-
 from functools import partial, wraps
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from ..meta import ConfigBuildable
 
 REGISTRY = defaultdict(dict)
+DATASET_REGISTRY = {}
+Corpus = namedtuple('Corpus', 'tag path lang')
 
 def register(tag: str, cls: ConfigBuildable, _type: str):
     def populator(generatingFunction):
@@ -49,8 +50,15 @@ def build(_type: str, tag: str):
     cls, config = REGISTRY[_type][tag]
     return cls.fromConfig(config)
 
+def register_dataset(tag, splits):
+    def __inner(f):
+        REGISTRY['dataset'][tag]= (splits, f)
+        return f
+    return __inner
+
 
 from .splitters import *
 from .tokenizers import *
 from .translators import *
+from .datasets import *
 
