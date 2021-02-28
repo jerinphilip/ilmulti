@@ -2,9 +2,9 @@ from argparse import ArgumentParser
 import sys
 
 def create_parser():
-    from ..translate.pretrained import PRETRAINED_CONFIG
+    from ..registry import REGISTRY
     parser = ArgumentParser(description='Translates a blob of text')
-    parser.add_argument('--model', choices=list(PRETRAINED_CONFIG.keys()), help='Model to use in translation', required=True)
+    parser.add_argument('--model', choices=list(REGISTRY['e2e_translator'].keys()), help='Model to use in translation', required=True)
     parser.add_argument('--tgt-lang', required=True, help='Language of the input-blob of text if known')
     parser.add_argument('--max-tokens', required=True, help='Max tokens for translator', type=int)
     parser.add_argument('--storage', required=True, help='Temporary storage location for dtranslate to cache for optimal batching')

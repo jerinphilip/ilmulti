@@ -2,9 +2,9 @@ from argparse import ArgumentParser
 import sys
 
 def create_parser():
-    from ..translate.pretrained import PRETRAINED_CONFIG
+    from ..registry import REGISTRY
     parser = ArgumentParser(description='Translates a blob of text')
-    parser.add_argument('--model', choices=list(PRETRAINED_CONFIG.keys()), help='Model to use in translation', required=True)
+    parser.add_argument('--model', choices=list(REGISTRY['e2e_translator'].keys()), help='Model to use in translation', required=True)
     parser.add_argument('--input', default=None, help='Path to input file, default is stdin')
     parser.add_argument('--debug', action='store_true', help='Print debug statements')
     return parser
