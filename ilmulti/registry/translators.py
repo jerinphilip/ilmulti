@@ -48,5 +48,3 @@ for tx, tokenizer, splitter in available_e2e:
     config = deepcopy(e2e_config[tx])
     f = register_e2e_translator(tx, BlockingTranslator)( lambda: config)
 
-from . import registry
-print(registry(debug=True))
