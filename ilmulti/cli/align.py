@@ -10,10 +10,10 @@ def create_parser():
     return parser
 
 def align_main(args, text):
-    from ..translate import from_pretrained, PRETRAINED_CONFIG
+    from ..registry import build
     from ..align import BLEUAligner
-    model = from_pretrained(args.model)
-    aligner = BLEUAligner(model.translator, model.tokenizer, model.splitter)
+    model = build('e2e_translator', args.model)
+    aligner = BLEUAligner.fromE2ETranslator(model)
 
     files = text.splitlines()
     for line in files:
@@ -23,7 +23,7 @@ def align_main(args, text):
             tgt_content = tgtf.read()
             # translation = model(src_content, tgt_lang=tgt_lang)
             # hyps = [entry['tgt'] for entry in translation]
-            _ , (src_aligned, tgt_aligned) = aligner(src_content, src_lang,
+            src_aligned, tgt_aligned = aligner.align_forward(src_content, src_lang,
                     tgt_content, tgt_lang)
 
             aligned_fname = lambda fname, other: '{}-{}.aligned.txt'.format(fname, other)
