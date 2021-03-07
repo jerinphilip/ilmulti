@@ -1,6 +1,9 @@
 import warnings
+from .types import Lang
+from typing import List
+from ..meta import PseudoMultiFunctor, InvertibleFunctor
 
-def canonicalize(langcode):
+def canonicalize(langcode: str) -> Lang:
     """
     Fix inconsistent langcodes to a single canonical langcode. Example
     variations like `ud`, `ur` for urdu exists among datasets and this is often
@@ -21,14 +24,14 @@ def canonicalize(langcode):
     return inverse.get(langcode, langcode)
 
 
-def language_token(lang):
+def language_token(lang: Lang) -> str:
     """ 
     Control token used to indicate a language, often used to indicate which
     target language translate to. Follows a ``__t2<xx>__`` notation.
     """
     return '__t2{lang}__'.format(lang=lang)
 
-def strip_language_token(sample):
+def strip_language_token(sample: str) -> str:
     """ 
     Strips language token from a text embedded with a language token using
     language_token().
@@ -36,9 +39,7 @@ def strip_language_token(sample):
     language_token, *rest = sample.split()
     return ' '.join(rest)
 
-
-
-def inject_token(src_tokenized, tgt_lang):
+def inject_token(src_tokenized: List[str], tgt_lang: Lang) -> List[str]:
     """
     Injects a language-token prefix indicating the target language to translate
     to, for a give tokenized string.
@@ -50,7 +51,7 @@ def inject_token(src_tokenized, tgt_lang):
 
     return injected_src_tokenized
 
-def detect_lang(text_sequence, _type="whole"):
+def detect_lang(text_sequence: str, _type="whole") -> Lang:
     """
     Language detection utility for on-the-fly determination of language. Uses
     langid internally. Two options exist: 
