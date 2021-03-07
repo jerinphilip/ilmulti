@@ -27,8 +27,8 @@ class BLEUAlign:
         options = {
             'srcfile': src,
             'targetfile': tgt,
-            'galechurch' : True if (s2t is None and t2s) is None else False,
-            'no_translation_override': True if s2t is None else False,
+            'galechurch' : True if (s2t is None and t2s is None) else None,
+            'no_translation_override': True if (s2t is None and t2s is None) else False,
             'srctotarget': [s2t] if s2t else [],
             'targettosrc': [t2s] if t2s else [],
             'verbosity' : 0,
@@ -113,10 +113,11 @@ class BLEUAligner:
         return self._align(src, src_lang, tgt, tgt_lang, s2t, t2s, ssplit_src=False, ssplit_tgt=False)
 
     def _align(self, src: str, src_lang: Lang, tgt: str, tgt_lang: Lang, 
-            s2t: str, t2s: str=None, ssplit_src:bool =False, 
+            s2t: str, t2s: str=None, ssplit_src:bool=False, 
             ssplit_tgt:bool=False) -> Tuple[List[str], List[str]]:
 
         src = self._preprocess(src, src_lang, ssplit_src) 
+        s2t = self._preprocess(s2t, tgt_lang, ssplit_src)
         tgt = self._preprocess(tgt, tgt_lang, ssplit_tgt)
 
         srcs, tgts = BLEUAlign.withString(src, tgt, s2t=s2t, t2s=t2s);
@@ -156,7 +157,3 @@ class BLEUAligner:
         srcs = [entry['src'] for entry in result]
         s2ts = [entry['tgt'] for entry in result]
         return ('\n'.join(srcs), '\n'.join(s2ts))
-
-
-
-
