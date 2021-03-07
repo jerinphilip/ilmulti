@@ -27,7 +27,7 @@ def cods_comad_config(_type: Literal['m2m', 'm2en'], _iter: int) -> dict:
 
 cods_comad_config_d = {}
 for _type in ['m2m', 'm2en']:
-    for _iter in range(4):
+    for _iter in range(5):
         name, config = cods_comad_config(_type, _iter)
         cods_comad_config_d[name] = deepcopy(config)
         generating_fn = lambda : cods_comad_config_d[name]
