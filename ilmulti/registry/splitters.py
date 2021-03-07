@@ -27,7 +27,7 @@ def __punkt_pib():
     config = { lang: {'lang': lang, 'path': path(lang)} for lang in langs }
     return config
 
-@register_splitter('punkt/pib', MultiPunktSplitter)
+@register_splitter('punkt/indiccorp', MultiPunktSplitter)
 def __punkt_indiccorp():
     ASSETS_DIR = resolve()
     data_dir = os.path.join(ASSETS_DIR, 'punkt/indiccorp')   
