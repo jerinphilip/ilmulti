@@ -10,6 +10,7 @@ ilmulti.egg-info/
 
 # Ignore python environment
 env
+env3.8
 venv
 .vscode
 
