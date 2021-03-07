@@ -22,6 +22,7 @@ Specialized Register
 .. autofunction:: ilmulti.registry.register_tokenizer
 .. autofunction:: ilmulti.registry.register_splitter
 .. autofunction:: ilmulti.registry.register_translator
+.. autofunction:: ilmulti.registry.register_e2e_translator
 
 Using Registry
 ^^^^^^^^^^^^^^
