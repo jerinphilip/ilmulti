@@ -1,1 +1,1 @@
-from .bleu_align import BLEUAligner, BLEUAlign
+from .bleu_align import BLEUAlign, BLEUAligner

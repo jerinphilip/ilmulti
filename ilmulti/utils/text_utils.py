@@ -1,5 +1,2 @@
-
 def concat(lines: list[str]) -> str:
-    return '\n'.join(lines)
-
-
+    return "\n".join(lines)

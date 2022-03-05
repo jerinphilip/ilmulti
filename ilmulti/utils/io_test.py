@@ -1,20 +1,21 @@
 import pytest
-from .io import ParallelWriter, ParallelReader
-from .io import IOBase
+
+from .io import IOBase, ParallelReader, ParallelWriter
+
 
 def test_parallel_writer(tmp_path):
-    with ParallelWriter(tmp_path, 'test_parallel', 'xx', 'yy') as writer:
+    with ParallelWriter(tmp_path, "test_parallel", "xx", "yy") as writer:
         for src, tgt in zip(range(1, 100), range(2, 101)):
             writer.write(str(src), str(tgt))
-    with ParallelReader(tmp_path, 'test_parallel', 'xx', 'yy') as reader:
+    with ParallelReader(tmp_path, "test_parallel", "xx", "yy") as reader:
         for src, tgt in reader:
-            assert(int(src) + 1 == int(tgt))
+            assert int(src) + 1 == int(tgt)
+
 
 def test_iobase_abstract_method(tmp_path):
     with pytest.raises(TypeError):
-        iobase = IOBase(tmp_path, 'test_parallel', 'xx', 'yy')
+        iobase = IOBase(tmp_path, "test_parallel", "xx", "yy")
 
     IOBase.__abstractmethods__ = ()
-    iobase = IOBase(tmp_path, 'test_parallel', 'xx', 'yy')
-    assert(iobase.fp() == None)
-
+    iobase = IOBase(tmp_path, "test_parallel", "xx", "yy")
+    assert iobase.fp() == None

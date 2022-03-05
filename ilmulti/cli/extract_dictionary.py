@@ -1,18 +1,16 @@
-
-from ..tokenize import build_tokenizer
 from argparse import ArgumentParser
 
+from ..tokenize import build_tokenizer
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument('--tag', type=str, required=True)
-    parser.add_argument('--outfile', type=str, required=True)
+    parser.add_argument("--tag", type=str, required=True)
+    parser.add_argument("--outfile", type=str, required=True)
 
     # Optional
-    parser.add_argument('--src', type=str)
-    parser.add_argument('--tgt', type=str)
-    parser.add_argument('--single', action='store_true')
-
+    parser.add_argument("--src", type=str)
+    parser.add_argument("--tgt", type=str)
+    parser.add_argument("--single", action="store_true")
 
     args = parser.parse_args()
 

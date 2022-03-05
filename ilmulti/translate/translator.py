@@ -6,35 +6,39 @@ from collections import namedtuple
 try:
     import fairseq
     import torch
+    from fairseq import checkpoint_utils, data, options, tasks, tokenizer, utils
     from fairseq.sequence_generator import SequenceGenerator
-    from fairseq import data, options, tasks, tokenizer, utils, checkpoint_utils
 except ImportError:
     warnings.warn(
-    """
+        """
     Please check if you have installed specified versions of torch,
     fairseq-ilmt etc; These are not hard-requirements except for the
     translation module and hence not specified in setup.py or
     requirements.txt. Exiting as absence of these modules is fatal to
     this script.  
     """
-    ) 
+    )
     exit()
 
-from .args import Args
 from ..meta import ConfigBuildable
+from .args import Args
 
-Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
-Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
+Batch = namedtuple("Batch", "ids src_tokens src_lengths")
+Translation = namedtuple("Translation", "src_str hypos pos_scores alignments")
+
 
 class FairseqTranslator(ConfigBuildable):
     def __init__(self, args, use_cuda=False):
         from ..utils import Capturing
+
         with Capturing() as dev_null:
             self.args = args
             self.task = fairseq.tasks.setup_task(args)
             self.use_cuda = use_cuda
-            model_paths = args.path.split(':')
-            self.models, model_args = checkpoint_utils.load_model_ensemble(model_paths, task=self.task, arg_overrides=eval(args.model_overrides))
+            model_paths = args.path.split(":")
+            self.models, model_args = checkpoint_utils.load_model_ensemble(
+                model_paths, task=self.task, arg_overrides=eval(args.model_overrides)
+            )
             self.tgt_dict = self.task.target_dictionary
 
             # Optimize ensemble for generation
@@ -55,7 +59,6 @@ class FairseqTranslator(ConfigBuildable):
             )
             self.generator = self.task.build_generator(args)
 
-
     def __call__(self, lines, attention=False):
         start_id = 0
         results = []
@@ -73,16 +76,15 @@ class FairseqTranslator(ConfigBuildable):
                 src_lengths = src_lengths.cuda()
 
             sample = {
-                'net_input': {
-                    'src_tokens': src_tokens,
-                    'src_lengths': src_lengths,
+                "net_input": {
+                    "src_tokens": src_tokens,
+                    "src_lengths": src_lengths,
                 },
             }
             translations = self.task.inference_step(self.generator, self.models, sample)
             for i, (id, hypos) in enumerate(zip(batch.ids.tolist(), translations)):
                 src_tokens_i = utils.strip_pad(src_tokens[i], tgt_dict.pad())
                 results.append((start_id + id, src_tokens_i, hypos))
-
 
         exports = []
         for id, src_tokens, hypos in sorted(results, key=lambda x: x[0]):
@@ -91,42 +93,42 @@ class FairseqTranslator(ConfigBuildable):
                 # print('S-{}\t{}'.format(id, src_str))
 
             # Process top predictions
-            for hypo in hypos[:min(len(hypos), args.nbest)]:
+            for hypo in hypos[: min(len(hypos), args.nbest)]:
                 hypo_tokens, hypo_str, alignment = utils.post_process_prediction(
-                    hypo_tokens=hypo['tokens'].int().cpu(),
+                    hypo_tokens=hypo["tokens"].int().cpu(),
                     src_str=src_str,
-                    alignment=hypo['alignment'].int().cpu() if hypo['alignment'] is not None else None,
+                    alignment=hypo["alignment"].int().cpu()
+                    if hypo["alignment"] is not None
+                    else None,
                     align_dict=align_dict,
                     tgt_dict=tgt_dict,
                     remove_bpe=args.remove_bpe,
                 )
                 export = {
-                    'src' : src_str,
-                    'id'  : id,
-                    'tgt' : hypo_str,
+                    "src": src_str,
+                    "id": id,
+                    "tgt": hypo_str,
                     # 'attn' : translation['attention'].tolist(),
                 }
 
                 if not attention:
-                    export['attn'] = None
+                    export["attn"] = None
 
                 exports.append(export)
         return exports
 
-
-
-
     def _make_batches(self, lines):
-    # def make_batches(lines, args, task, max_positions, encode_fn):
+        # def make_batches(lines, args, task, max_positions, encode_fn):
         args = self.args
         task = self.task
         max_positions = args.max_positions
 
         encode_fn = lambda x: x
-        
+
         tokens = [
             task.source_dictionary.encode_line(
-            encode_fn(src_str), add_if_not_exist=False).long()
+                encode_fn(src_str), add_if_not_exist=False
+            ).long()
             for src_str in lines
         ]
 
@@ -139,31 +141,35 @@ class FairseqTranslator(ConfigBuildable):
         ).next_epoch_itr(shuffle=False)
         for batch in itr:
             yield Batch(
-                ids=batch['id'],
-                src_tokens=batch['net_input']['src_tokens'], src_lengths=batch['net_input']['src_lengths'],
-            ), batch['id']
+                ids=batch["id"],
+                src_tokens=batch["net_input"]["src_tokens"],
+                src_lengths=batch["net_input"]["src_lengths"],
+            ), batch["id"]
 
     @classmethod
     def fromConfig(cls, config):
-        model_path = config['path']
+        model_path = config["path"]
         data = os.path.dirname(model_path)
         if not os.path.exists(model_path):
             raise FileNotFoundError(
                 "The model does not seem downloaded and available at {}."
-                "Please use scripts/download-and-setup.sh before running this code.".format(model_path)
+                "Please use scripts/download-and-setup.sh before running this code.".format(
+                    model_path
+                )
             )
-
 
         args = Args(**config)
 
         import fairseq
+
         parser = fairseq.options.get_generation_parser(interactive=True)
-        default_args = fairseq.options.parse_args_and_arch(parser, input_args=['dummy-data'])
+        default_args = fairseq.options.parse_args_and_arch(
+            parser, input_args=["dummy-data"]
+        )
         keyword_arguments = dict(default_args._get_kwargs())
         args.enhance(print_alignment=True)
         args.enhance(**keyword_arguments)
 
-        use_cuda = True if 'FSEQ_USE_CUDA' in os.environ else False
+        use_cuda = True if "FSEQ_USE_CUDA" in os.environ else False
         fseq_translator = cls(args, use_cuda=use_cuda)
         return fseq_translator
-

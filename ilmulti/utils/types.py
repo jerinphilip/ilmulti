@@ -1,10 +1,8 @@
+from typing import Literal, NewType
 
-from typing import NewType, Literal
+_langs = ["en", "hi", "ml", "bn", "ur", "ml", "ta", "te", "or", "pj", "gu", "mr"]
+__Lang = Literal["en", "hi", "ml", "bn", "ur", "ml", "ta", "te", "or", "pj", "gu", "mr"]
 
-_langs = [
-    'en', 'hi', 'ml', 'bn', 'ur', 'ml', 'ta', 'te', 'or', 'pj', 'gu', 'mr'
-]
-__Lang = Literal['en', 'hi', 'ml', 'bn', 'ur', 'ml', 'ta', 'te', 'or', 'pj', 'gu', 'mr']
 
 class _Lang:
     """Either of: {}""".format(str(_langs))
@@ -12,5 +10,3 @@ class _Lang:
 
 Lang = _Lang()
 Lang.__supertype__ = __Lang
-
-

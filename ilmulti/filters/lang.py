@@ -1,6 +1,8 @@
-from ..meta import Filter
 from langid.langid import LanguageIdentifier
 from langid.langid import model as m
+
+from ..meta import Filter
+
 
 class LangMatch(Filter):
     def __init__(self, src_lang: str, tgt_lang: str, threshold=0.8):
@@ -13,11 +15,14 @@ class LangMatch(Filter):
     def condition(self, src_line: str, tgt_line: str) -> bool:
         def check(line, lang_expected):
             lang, prob = self.identifier.classify(line)
-            src = (prob >= self.threshold)
-            if not src: return False
-            if lang != lang_expected: return False
+            src = prob >= self.threshold
+            if not src:
+                return False
+            if lang != lang_expected:
+                return False
 
-        if not check(src_line, self.src_lang): return False
-        if not check(tgt_line, self.tgt_lang): return False
+        if not check(src_line, self.src_lang):
+            return False
+        if not check(tgt_line, self.tgt_lang):
+            return False
         return True
-

@@ -1,10 +1,12 @@
 import os
-from warnings import warn
-from sentencepiece import SentencePieceProcessor
 from collections import Counter
+from warnings import warn
 
-from ..utils.language_utils import language_token, detect_lang
-from ..meta import InvertibleFunctor, MultiFunctor, ConfigBuildable
+from sentencepiece import SentencePieceProcessor
+
+from ..meta import ConfigBuildable, InvertibleFunctor, MultiFunctor
+from ..utils.language_utils import detect_lang, language_token
+
 
 class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
     def __init__(self, path, lang, units):
@@ -16,16 +18,16 @@ class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
 
     @classmethod
     def fromConfig(cls, config):
-        return cls(config['path'], config['lang'], config['units'])
+        return cls(config["path"], config["lang"], config["units"])
 
     def load_model(self):
-        model_file = '{lang}.{units}.model'.format(lang=self.lang, units=self.units)
+        model_file = "{lang}.{units}.model".format(lang=self.lang, units=self.units)
         model_path = os.path.join(self.path, model_file)
         self.model = SentencePieceProcessor()
         self.model.load(model_path)
 
     def load_vocabulary(self):
-        vocab_file = '{}.{}.vocab'.format(self.lang, self.units)
+        vocab_file = "{}.{}.vocab".format(self.lang, self.units)
         vocab_path = os.path.join(self.path, vocab_file)
         self.vocab = set()
         with open(vocab_path) as fp:
@@ -35,13 +37,12 @@ class SentencePieceTokenizer(InvertibleFunctor, ConfigBuildable):
 
     def transform(self, text: str):
         tokens = self.model.EncodeAsPieces(text)
-        clean = lambda x: x in self.vocab 
+        clean = lambda x: x in self.vocab
         tokens = list(filter(clean, tokens))
-        return ' '.join(tokens)
+        return " ".join(tokens)
 
     def inv(self, tokenized_text: str):
         return _detokenize(tokenized_text)
-
 
     def dictionary_fairseq(self):
         return fairseq_dictionary_from_vocab(self.vocab)
@@ -62,7 +63,7 @@ class MultiSentencePieceTokenizer(MultiFunctor, InvertibleFunctor):
             tokenizer_vocab_ = self.functorDict[key].vocab
             vocab_ = vocab_.union(tokenizer_vocab_)
 
-        # Sorting is critical; 
+        # Sorting is critical;
         vocab_ = sorted(list(vocab_))
         return vocab_
 
@@ -74,18 +75,20 @@ class MultiSentencePieceTokenizer(MultiFunctor, InvertibleFunctor):
 
 
 def fairseq_dictionary_from_vocab(vocab):
-        from fairseq.data.dictionary import Dictionary
-        dictionary = Dictionary()
-        for word in self.vocab:
-            dictionary.add_symbol(word)
-        return dictionary
+    from fairseq.data.dictionary import Dictionary
+
+    dictionary = Dictionary()
+    for word in self.vocab:
+        dictionary.add_symbol(word)
+    return dictionary
+
 
 def _detokenize(tokenized_text):
-    SPM_SYMBOL = '▁'
-    tokenized_text = tokenized_text.replace(' ', '')
-    tokenized_text = tokenized_text.replace(SPM_SYMBOL, ' ')
+    SPM_SYMBOL = "▁"
+    tokenized_text = tokenized_text.replace(" ", "")
+    tokenized_text = tokenized_text.replace(SPM_SYMBOL, " ")
     if not tokenized_text:
-        return ''
-    if tokenized_text[0] == ' ':
+        return ""
+    if tokenized_text[0] == " ":
         tokenized_text = tokenized_text[1:]
     return tokenized_text

@@ -1,11 +1,12 @@
-
 from collections import namedtuple
+
 
 class Args:
     """
     Adapter to sub in for the namespace so the SequenceGenerator can be
     created from fairseq.
     """
+
     def __init__(self, **kwargs):
         self.custom_set = set()
         self.enhance(**kwargs)
@@ -22,6 +23,6 @@ class Args:
     def __str__(self):
         lines = []
         for key in sorted(list(self.custom_set)):
-            line = '{key} : {val}'.format(key=key, val=self.__dict__[key])
+            line = "{key} : {val}".format(key=key, val=self.__dict__[key])
             lines.append(line)
-        return '\n'.join(lines)
+        return "\n".join(lines)

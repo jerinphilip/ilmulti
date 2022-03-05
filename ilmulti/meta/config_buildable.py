@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class ConfigBuildable(ABC):
     @classmethod
     @abstractmethod
@@ -14,4 +15,3 @@ class ConfigBuildable(ABC):
     def build(cls, config):
         assert cls.validateConfig(config)
         return cls.fromConfig(config)
-

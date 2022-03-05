@@ -1,7 +1,8 @@
-import os
 import abc
+import os
 
-MAX_BUF_SIZE=1024*1024
+MAX_BUF_SIZE = 1024 * 1024
+
 
 class IOBase(abc.ABC):
     def __init__(self, prefix, name, src, tgt):
@@ -19,19 +20,21 @@ class IOBase(abc.ABC):
     def fp(self, *args, **kwargs):
         return
 
+
 class ParallelWriter(IOBase):
     def __init__(self, prefix, name, src, tgt, buf_size=MAX_BUF_SIZE):
         self.buf_size = buf_size
         super().__init__(prefix, name, src, tgt)
 
     def fp(self, prefix, name, ext):
-        fname = '{}.{}'.format(name, ext)
+        fname = "{}.{}".format(name, ext)
         fpath = os.path.join(prefix, fname)
-        return open(fpath, 'w+', buffering=self.buf_size)
+        return open(fpath, "w+", buffering=self.buf_size)
 
     def write(self, src, tgt):
         print(src, file=self.src)
         print(tgt, file=self.tgt)
+
 
 class ParallelReader(IOBase):
     def __init__(self, prefix, name, src, tgt):
@@ -39,13 +42,13 @@ class ParallelReader(IOBase):
 
     def __iter__(self):
         return self
-    
+
     def __next__(self):
         src = next(self.src)
         tgt = next(self.tgt)
         return src, tgt
 
     def fp(self, prefix, name, ext):
-        fname = '{}.{}'.format(name, ext)
+        fname = "{}.{}".format(name, ext)
         fpath = os.path.join(prefix, fname)
-        return open(fpath, 'r')
+        return open(fpath, "r")

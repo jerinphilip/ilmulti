@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from .config_buildable import ConfigBuildable
+
 
 class ForwardFunctor(ABC):
     @abstractmethod
@@ -17,10 +19,11 @@ class ForwardFunctor(ABC):
     def map(self, data):
         return [self.transform(datum) for datum in data]
 
+
 class InvertibleFunctor(ForwardFunctor):
     @abstractmethod
     def inv(self, tx):
-        return 
+        return
 
     def inv_map(self, txs):
         return [self.inv(tx) for tx in txs]
@@ -42,6 +45,7 @@ class MultiFunctor(ConfigBuildable, ForwardFunctor):
 
     def map(self, data, lang):
         return self.functorDict[lang].map(data)
+
 
 class PseudoMultiFunctor(MultiFunctor):
     def __init__(self):
